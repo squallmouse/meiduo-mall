@@ -1,3 +1,8 @@
+# -*- coding: UTF-8 -*-
+# @创建时间: 2024/12/12 10:34   -- yh 
+# @文件名:      dev_settings.py
+
+# 开发环境设置
 """
 Django settings for meiduo project.
 
