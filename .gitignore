@@ -180,3 +180,6 @@ cython_debug/
 .idea/vcs.xml
 .idea/modules.xml
 .idea/inspectionProfiles/profiles_settings.xml
+
+
+node_modules/
