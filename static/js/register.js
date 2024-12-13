@@ -1,4 +1,6 @@
-import axios from 'axios';
+// import axios from 'axios'
+
+// import axios from "axios";
 
 let vm = new Vue({
     el: "#app",
@@ -66,26 +68,25 @@ let vm = new Vue({
                 //window禁止提交表单
                 console.log('前面有错误 error')
                 return false
-            } else {
-                //提交表单
-                let url = "/register/"
-                dic = {
-                    'username': this.username,
-                    'password': this.password,
-                    'password2': this.password2,
-                    'mobile': this.mobile,
-                    'allow': this.allow,
-                }
-                axios({
-                    method:'get',
-                    url:url
-                })
 
-                axios.post(url, dic).then((response) => {
-                    console.log(response)
-                    console.log(response.data.code)
-                })
             }
+            // else {
+            //     //提交表单
+            //     let url = "/register/"
+            //     let dic = {
+            //         'username': this.username,
+            //         'password': this.password,
+            //         'password2': this.password2,
+            //         'mobile': this.mobile,
+            //         'allow': this.allow,
+            //     }
+            //
+            //
+            //     axios.post(url, dic).then((response) => {
+            //         console.log(response)
+            //         console.log(response.data.code)
+            //     })
+            // }
         },
     }
 });

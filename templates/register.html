@@ -9,7 +9,8 @@
 {#    <script type="text/javascript" src="{{ static('js/vue.js') }}"></script>#}
 {#    网上的vue 有提示#}
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
-    <script type="text/javascript" src="{{ static('js/axios-1.7.9.js') }}"></script>
+{#    <script type="text/javascript" src="{{  }}"></script>#}
+{#    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>#}
 </head>
 <body>
 <div id="app">
@@ -28,11 +29,12 @@
                 <form method="post" class="register_form"  @submit="on_submit" v-cloak>
 {#  {{ csrf_input }} Django框架提供的一个input                  #}
                     {{ csrf_input }}
+
                     <ul>
                         <li>
                             <label>用户名:</label>
-                            <input type="text" v-model="username"  @blur="check_username" name="username" id="user_name">
-                            <span class="error_tip" v-show="error_username">[[ error_username_message]]</span>
+                            <input type="text" v-model="username"   @blur="check_username" name="username" id="user_name">
+                            <span class="error_tip"  v-show="error_username">[[ error_username_message]]</span>
                         </li>
                         <li>
                             <label>密码:</label>
@@ -87,6 +89,7 @@
         <p>CopyRight © 2016 北京美多商业股份有限公司 All Rights Reserved</p>
         <p>电话：010-****888 京ICP备*******8号</p>
     </div>
+
 </div>
 
 </body>
