@@ -1,9 +1,13 @@
 import re
 
+from django.contrib.auth import login
+from django.db import DatabaseError
 from django.http import HttpResponseForbidden, JsonResponse
-from django.shortcuts import render, HttpResponse
+from django.shortcuts import render, HttpResponse, redirect
+from django.urls import reverse
 from django.views import View
 from apps.users.models import User
+from meiduo.utils.response_code import RETCODE
 
 
 # Create your views here.
@@ -32,7 +36,7 @@ class Register(View):
         if not re.match(r'^[a-zA-Z0-9-_]{5,20}$', userName):
             return HttpResponseForbidden('请输入5-20个字符的用户名')
         # 判断密码是否是8-20个
-        if not re.match(r'^[a-zA-Z0-A_-]{8,20}', password):
+        if not re.match(r'^[a-zA-Z0-9_-]{8,20}', password):
             return HttpResponseForbidden('请输入8-20位的密码')
         # 判断两次密码是否一致
         if password != password2:
@@ -44,6 +48,35 @@ class Register(View):
         if allow == False:
             return HttpResponseForbidden('请勾选用户协议')
 
-        return JsonResponse({'code': 0})
+        # 保存注册数据
+        try:
+            user = User.objects.create_user(username=userName, password=password, mobile=mobile)
+        except DatabaseError:
+            return render(request, 'register.html', {'register_errmsg': '注册失败'})
 
-        # User.objects.create_user(username=userName, password=password, mobile=mobile)
+        print('注册成功 --> 跳转首页')
+
+        # 实现状态保持
+        login(request, user)
+
+        return redirect(reverse('content:index'))
+
+
+class UsernameCountView(View):
+    """判断用户名是否重复 """
+
+    def get(self, request, username):
+        """查找用户名的数量"""
+        count = User.objects.filter(username=username).count()
+        print(f"用户名的个数 --> {count}")
+        return JsonResponse({'code': RETCODE.OK, 'errmsg': 'ok', 'count': count})
+
+
+class MobileCountView(View):
+    """手机号是否重复"""
+
+    def get(self, request, mobile):
+        """查找手机号的数量"""
+        count = User.objects.filter(mobile=mobile).count()
+
+        return JsonResponse({'code': RETCODE.OK, 'errmsg': 'ok', 'count': count})

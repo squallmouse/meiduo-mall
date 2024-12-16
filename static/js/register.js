@@ -28,6 +28,24 @@ let vm = new Vue({
                 this.error_username_message = "请输入5-20个字符"
                 this.error_username = true
             }
+            // 用户名称是否重复
+            if (!this.error_username) {
+                let url = '/usernames/' + this.username + '/count/'
+                axios
+                    .get(url,{
+                        responseType: 'json',
+                    })
+                    .then(response => {
+                        console.log(response.data)
+                        if (response.data.count == 1) {
+                            this.error_username = true
+                            this.error_username_message = "用户名已存在"
+                        }
+                    })
+                    .catch(error => {
+                        console.log(error.response)
+                    })
+            }
         },
         // 校验密码
         check_password() {
@@ -46,6 +64,24 @@ let vm = new Vue({
 
             if (this.error_mobile) {
                 this.error_mobile_message = "手机号格式不正确"
+            }
+            // 验证手机号是否重复
+            if (!this.error_mobile) {
+                let url = '/mobiles/' + this.mobile + '/count/'
+                axios
+                    .get(url,{
+                        responseType: 'json'
+                    })
+                    .then(response => {
+                        console.log(response.data)
+                        if (response.data.count != 0){
+                            this.error_mobile = true
+                            this.error_mobile_message = '手机号重复'
+                        }
+                    })
+                    .catch(error => {
+                        console.log(error)
+                    })
             }
         },
         // 校验是否勾选协议
