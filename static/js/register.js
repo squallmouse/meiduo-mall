@@ -1,7 +1,3 @@
-// import axios from 'axios'
-
-// import axios from "axios";
-
 let vm = new Vue({
     el: "#app",
     delimiters: ["[[", "]]"],
@@ -18,8 +14,8 @@ let vm = new Vue({
         error_mobile: false,
         error_allow: false,
 
-        error_username_message: '123321',
-        error_mobile_message: "222222"
+        error_username_message: '1',
+        error_mobile_message: "2"
 
     },
     methods: {
@@ -57,7 +53,8 @@ let vm = new Vue({
             this.error_allow = !this.allow;
         },
         // 监听表单提交事件
-        on_submit() {
+        on_submit(event) {
+            // event.preventDefault();
             this.check_allow()
             this.check_username()
             this.check_mobile()
@@ -68,25 +65,8 @@ let vm = new Vue({
                 //window禁止提交表单
                 console.log('前面有错误 error')
                 return false
-
             }
-            // else {
-            //     //提交表单
-            //     let url = "/register/"
-            //     let dic = {
-            //         'username': this.username,
-            //         'password': this.password,
-            //         'password2': this.password2,
-            //         'mobile': this.mobile,
-            //         'allow': this.allow,
-            //     }
-            //
-            //
-            //     axios.post(url, dic).then((response) => {
-            //         console.log(response)
-            //         console.log(response.data.code)
-            //     })
-            // }
+
         },
     }
 });

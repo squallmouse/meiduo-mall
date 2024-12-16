@@ -182,3 +182,4 @@ cython_debug/
 .idea/inspectionProfiles/profiles_settings.xml
 
 node_modules/
+node_modules
