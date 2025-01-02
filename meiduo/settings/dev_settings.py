@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     "apps.users.apps.UsersConfig",
-    'apps.content.apps.ContentConfig'
+    'apps.content.apps.ContentConfig',
+    'apps.verifications.apps.VerificationsConfig'
 
 ]
 
@@ -73,20 +74,20 @@ TEMPLATES = [
             ],
         },
     },
-    {  # 原来的django模板引擎
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR.parent / 'templates']
-        ,
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-            ],
-        },
-    },
+    # {  # 原来的django模板引擎
+    #     'BACKEND': 'django.template.backends.django.DjangoTemplates',
+    #     'DIRS': [BASE_DIR.parent / 'templates']
+    #     ,
+    #     'APP_DIRS': True,
+    #     'OPTIONS': {
+    #         'context_processors': [
+    #             'django.template.context_processors.debug',
+    #             'django.template.context_processors.request',
+    #             'django.contrib.auth.context_processors.auth',
+    #             'django.contrib.messages.context_processors.messages',
+    #         ],
+    #     },
+    # },
 ]
 
 WSGI_APPLICATION = 'meiduo.wsgi.application'

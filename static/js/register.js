@@ -1,3 +1,5 @@
+import Vue from "vue";
+
 let vm = new Vue({
     el: "#app",
     delimiters: ["[[", "]]"],
@@ -6,7 +8,7 @@ let vm = new Vue({
         password: '',
         password2: '',
         mobile: '',
-        allow: false,
+        allow: '',
 
         error_username: false,
         error_password: false,
@@ -37,7 +39,7 @@ let vm = new Vue({
                     })
                     .then(response => {
                         console.log(response.data)
-                        if (response.data.count == 1) {
+                        if (response.data.count === 1) {
                             this.error_username = true
                             this.error_username_message = "用户名已存在"
                         }

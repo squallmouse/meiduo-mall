@@ -45,7 +45,7 @@ class Register(View):
         if not re.match(r'^1[3-9]\d{9}$', mobile):
             return HttpResponseForbidden('请输入正确的手机号')
         # 判断是否勾选用户协议
-        if allow == False:
+        if allow != 'on':
             return HttpResponseForbidden('请勾选用户协议')
 
         # 保存注册数据
