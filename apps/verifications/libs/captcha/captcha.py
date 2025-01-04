@@ -12,6 +12,7 @@ from PIL import Image, ImageDraw, ImageFont
 from PIL import ImageFilter
 from PIL.ImageDraw import Draw
 from PIL.ImageFont import truetype
+from captcha.image import ImageCaptcha
 
 
 class Bezier:
@@ -66,7 +67,7 @@ class Captcha(object):
             Captcha._instance = Captcha()
         return Captcha._instance
 
-    def initialize(self, width=200, height=75, color=None, text=None, fonts=None):
+    def initialize(self, width=200, height=100, color=None, text=None, fonts=None):
         # self.image = Image.new('RGB', (width, height), (255, 255, 255))
         self._text = text if text else random.sample(string.ascii_uppercase + string.ascii_uppercase + '3456789', 4)
         self.fonts = fonts if fonts else \
@@ -192,24 +193,11 @@ class Captcha(object):
             random.uniform(-angle, angle), Image.BILINEAR, expand=1)
 
     def captcha(self, path=None, fmt='JPEG'):
-        """Create a captcha.
 
-        Args:
-            path: save path, default None.
-            fmt: image format, PNG / JPEG.
-        Returns:
-            A tuple, (text, StringIO.value).
-            For example:
-                ('JGW9', '\x89PNG\r\n\x1a\n\x00\x00\x00\r...')
-
-        """
-        image = Image.new('RGB', (self.width, self.height), (255, 255, 255))
-        image = self.background(image)
-        image = self.text(image, self.fonts, drawings=['warp', 'rotate', 'offset'])
-        image = self.curve(image)
-        image = self.noise(image)
-        image = self.smooth(image)
-        text = "".join(self._text)
+        img = ImageCaptcha()
+        _text =  random.sample(string.ascii_uppercase + string.ascii_uppercase + '3456789', 4)
+        text = "".join(_text)
+        image = img.generate_image(text)
         out = BytesIO()
         image.save(out, format=fmt)
         return text, out.getvalue()
