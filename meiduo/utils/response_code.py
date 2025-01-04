@@ -4,7 +4,7 @@
 class RETCODE:
     OK                  = "0"
     IMAGECODEERR        = "4001"
-    THROTTLINGERR       = "4002"
+    THROTTLINGERR       = "4002" # 访问过于频繁
     NECESSARYPARAMERR   = "4003"
     USERERR             = "4004"
     PWDERR              = "4005"

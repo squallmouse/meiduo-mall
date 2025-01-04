@@ -1,3 +1,4 @@
+import logging
 import re
 
 from django.contrib.auth import login
@@ -6,6 +7,8 @@ from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import render, HttpResponse, redirect
 from django.urls import reverse
 from django.views import View
+from django_redis import get_redis_connection
+
 from apps.users.models import User
 from meiduo.utils.response_code import RETCODE
 
@@ -28,9 +31,10 @@ class Register(View):
         password2 = dict.get('password2')
         mobile = dict.get('mobile')
         allow = dict.get('allow')
+        msg_code_client = dict.get('sms_code')
 
         # 判断参数是否齐全
-        if not all([userName, password, password2, mobile, allow]):
+        if not all([userName, password, password2, mobile, allow,msg_code_client]):
             return HttpResponseForbidden('缺少必传参数')
         # 判断用户名是否是5-20个字符
         if not re.match(r'^[a-zA-Z0-9-_]{5,20}$', userName):
@@ -47,6 +51,15 @@ class Register(View):
         # 判断是否勾选用户协议
         if allow != 'on':
             return HttpResponseForbidden('请勾选用户协议')
+        # 判断短信验证码
+        redis_conn = get_redis_connection("verify_code")
+        sms_code_server = redis_conn.get('sms_%s' % mobile).decode()
+        if msg_code_client != sms_code_server:
+            return render(request, 'register.html', {'register_errmsg': '短信验证码错误'})
+        try:
+            redis_conn.delete('sms_%s' % mobile)
+        except Exception as e:
+            logging.error(e)
 
         # 保存注册数据
         try:

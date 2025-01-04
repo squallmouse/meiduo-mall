@@ -61,9 +61,9 @@
                         </li>
                         <li>
                             <label>短信验证码:</label>
-                            <input type="text" name="sms_code" id="msg_code" class="msg_input">
-                            <a href="javascript:;" class="get_msg_code">获取短信验证码</a>
-                            <span class="error_tip">请填写短信验证码</span>
+                            <input type="text" name="sms_code" id="msg_code" class="msg_input" v-model="msg_code" @blur="check_msg_code">
+                            <a @click="send_msg" class="get_msg_code">[[msg_code_tip]]</a>
+                            <span class="error_tip" v-show="error_msg_code">[[error_msg_code_message]]</span>
                         </li>
                         <li class="agreement">
                             <input type="checkbox" v-model="allow" @change="check_allow" name="allow" id="allow">

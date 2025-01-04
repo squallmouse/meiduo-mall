@@ -9,7 +9,10 @@ let vm = new Vue({
         allow: '',
         uuid: '',
         image_code_url: '',
-        image_code:'',
+        image_code: '',
+        msg_code: '',
+        msg_code_tip: '获取短信验证码',
+        can_send_msg_flag: true,
 
         error_username: false,
         error_password: false,
@@ -17,10 +20,12 @@ let vm = new Vue({
         error_mobile: false,
         error_allow: false,
         error_image_code: false,
+        error_msg_code: false,
 
         error_username_message: '1',
         error_mobile_message: "2",
         error_image_code_message: "",
+        error_msg_code_message: "",
 
     },
     mounted() {
@@ -28,12 +33,72 @@ let vm = new Vue({
         this.generate_image_code()
     },
     methods: {
+        // 发送短信验证码
+        send_msg() {
+            if (this.can_send_msg_flag === false) {
+                return
+            }
+            this.can_send_msg_flag = false
+            //     判断图片验证码
+            this.check_image_code()
+            this.check_mobile()
+            // axios发送请求
+            let url = "/sms_codes/" + this.mobile + "/?image_code=" + this.image_code + "&uuid=" + this.uuid
+            axios.get(url, {
+                responseType: 'json'
+            })
+                // 成功
+                .then((response) => {
+                    if (response.data.code === "0") {
+                        // 成功
+                        this.error_msg_code = false
+                        // 倒计时
+                        let count = 60
+                        let timer = setInterval(() => {
+                            if (count === 1) {
+                                clearInterval(timer)
+                                this.msg_code_tip = '获取短信验证码'
+                                this.error_msg_code = false
+                                this.can_send_msg_flag = true
+                            }
+                            count -= 1
+                            this.msg_code_tip = count + '秒'
+
+                        }, 1000, 60)
+
+                    } else if (response.data.code === "4001") {
+                        // 图形验证码错误
+                        this.error_msg_code = true
+                        this.error_image_code_message = response.data.errmsg
+                    } else if (response.data.code === "4002") {
+                        // 短信发送太过频繁
+                        this.error_msg_code = true
+                        this.error_msg_code_message = response.data.errmsg
+                    } else {
+                        this.can_send_msg_flag = true
+                    }
+                })
+                // 失败了
+                .catch((error) => {
+                    console.log(error)
+                })
+
+        },
+        // 确认短信验证码
+        check_msg_code() {
+            if (!this.msg_code) {
+                this.error_msg_code_message = '请填写短信验证码'
+                this.error_msg_code = true
+            } else {
+                this.error_msg_code = false
+            }
+        },
         // 确认图形码
         check_image_code() {
             if (!this.image_code) {
                 this.error_image_code_message = "请填写图片验证码"
                 this.error_image_code = true
-            }else{
+            } else {
                 this.error_image_code = false
             }
         },
@@ -97,7 +162,7 @@ let vm = new Vue({
                     })
                     .then(response => {
                         console.log(response.data)
-                        if (response.data.count != 0) {
+                        if (response.data.count !== 0) {
                             this.error_mobile = true
                             this.error_mobile_message = '手机号重复'
                         }
@@ -119,8 +184,10 @@ let vm = new Vue({
             this.check_mobile()
             this.check_password()
             this.check_password2()
+            this.check_image_code()
+            this.check_msg_code()
 
-            if (this.error_username || this.error_mobile || this.error_password || this.error_password2 || this.error_allow) {
+            if (this.error_username || this.error_mobile || this.error_password || this.error_password2 || this.error_allow || this.error_image_code || this.error_msg_code) {
                 //window禁止提交表单
                 console.log('前面有错误 error')
                 return false
