@@ -36,7 +36,7 @@ class Register(View):
         if not re.match(r'^[a-zA-Z0-9-_]{5,20}$', userName):
             return HttpResponseForbidden('请输入5-20个字符的用户名')
         # 判断密码是否是8-20个
-        if not re.match(r'^[a-zA-Z0-9_-]{8,20}', password):
+        if not re.match(r'^[a-zA-Z0-9_-]{8,20}$', password):
             return HttpResponseForbidden('请输入8-20位的密码')
         # 判断两次密码是否一致
         if password != password2:
@@ -57,6 +57,7 @@ class Register(View):
         print('注册成功 --> 跳转首页')
 
         # 实现状态保持
+        #   将通过认证的用户的唯一标识信息（比如：用户ID）写入到当前浏览器的 cookie 和服务端的 session 中。
         login(request, user)
 
         return redirect(reverse('content:index'))
@@ -68,8 +69,13 @@ class UsernameCountView(View):
     def get(self, request, username):
         """查找用户名的数量"""
         count = User.objects.filter(username=username).count()
+
         print(f"用户名的个数 --> {count}")
+
         return JsonResponse({'code': RETCODE.OK, 'errmsg': 'ok', 'count': count})
+
+
+
 
 
 class MobileCountView(View):

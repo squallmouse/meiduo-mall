@@ -1,5 +1,3 @@
-import Vue from "vue";
-
 let vm = new Vue({
     el: "#app",
     delimiters: ["[[", "]]"],
@@ -9,18 +7,41 @@ let vm = new Vue({
         password2: '',
         mobile: '',
         allow: '',
+        uuid: '',
+        image_code_url: '',
+        image_code:'',
 
         error_username: false,
         error_password: false,
         error_password2: false,
         error_mobile: false,
         error_allow: false,
+        error_image_code: false,
 
         error_username_message: '1',
-        error_mobile_message: "2"
+        error_mobile_message: "2",
+        error_image_code_message: "",
 
     },
+    mounted() {
+        // 生成图形验证码
+        this.generate_image_code()
+    },
     methods: {
+        // 确认图形码
+        check_image_code() {
+            if (!this.image_code) {
+                this.error_image_code_message = "请填写图片验证码"
+                this.error_image_code = true
+            }else{
+                this.error_image_code = false
+            }
+        },
+//         生成图形验证码
+        generate_image_code() {
+            this.uuid = generateUUID()
+            this.image_code_url = '/image_codes/' + this.uuid + '/'
+        },
 // 校验用户名
         check_username() {
             let re = /^[a-zA-Z0-9_-]{5,20}$/;
@@ -34,7 +55,7 @@ let vm = new Vue({
             if (!this.error_username) {
                 let url = '/usernames/' + this.username + '/count/'
                 axios
-                    .get(url,{
+                    .get(url, {
                         responseType: 'json',
                     })
                     .then(response => {
@@ -71,12 +92,12 @@ let vm = new Vue({
             if (!this.error_mobile) {
                 let url = '/mobiles/' + this.mobile + '/count/'
                 axios
-                    .get(url,{
+                    .get(url, {
                         responseType: 'json'
                     })
                     .then(response => {
                         console.log(response.data)
-                        if (response.data.count != 0){
+                        if (response.data.count != 0) {
                             this.error_mobile = true
                             this.error_mobile_message = '手机号重复'
                         }

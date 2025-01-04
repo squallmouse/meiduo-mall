@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     "apps.users.apps.UsersConfig",
     'apps.content.apps.ContentConfig',
-    'apps.verifications.apps.VerificationsConfig'
+    # 'apps.verifications.apps.VerificationsConfig'
 
 ]
 
@@ -60,12 +60,12 @@ ROOT_URLCONF = 'meiduo.urls'
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.jinja2.Jinja2',  # jinja2模板引擎
-        'DIRS': [BASE_DIR.parent / 'templates'],
+        'BACKEND' : 'django.template.backends.jinja2.Jinja2',  # jinja2模板引擎
+        'DIRS'    : [BASE_DIR.parent / 'templates'],
         'APP_DIRS': True,
-        'OPTIONS': {
+        'OPTIONS' : {
             # 补充Jinja2模板引擎环境
-            'environment': 'meiduo.utils.jinja2_env.jinja2_environment',
+            'environment'       : 'meiduo.utils.jinja2_env.jinja2_environment',
             'context_processors': [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
@@ -74,20 +74,20 @@ TEMPLATES = [
             ],
         },
     },
-    # {  # 原来的django模板引擎
-    #     'BACKEND': 'django.template.backends.django.DjangoTemplates',
-    #     'DIRS': [BASE_DIR.parent / 'templates']
-    #     ,
-    #     'APP_DIRS': True,
-    #     'OPTIONS': {
-    #         'context_processors': [
-    #             'django.template.context_processors.debug',
-    #             'django.template.context_processors.request',
-    #             'django.contrib.auth.context_processors.auth',
-    #             'django.contrib.messages.context_processors.messages',
-    #         ],
-    #     },
-    # },
+    {  # 原来的django模板引擎
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [BASE_DIR.parent / 'templates']
+        ,
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
 ]
 
 WSGI_APPLICATION = 'meiduo.wsgi.application'
@@ -97,32 +97,41 @@ WSGI_APPLICATION = 'meiduo.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'HOST': '127.0.0.1',
-        'port': 3306,
-        'USER': 'yuanhaomeiduo',
+        'ENGINE'  : 'django.db.backends.mysql',
+        'HOST'    : '127.0.0.1',
+        'port'    : 3306,
+        'USER'    : 'yuanhaomeiduo',
         'PASSWORD': 'meiduo123yuanhao',
-        'NAME': 'meiduo'
+        'NAME'    : 'meiduo'
     }
 }
 # 缓存配置
 CACHES = {
-    "default": {  # 默认
-        "BACKEND": "django_redis.cache.RedisCache",
+    "default"    : {  # 默认 缓存后端- default
+        "BACKEND" : "django_redis.cache.RedisCache",
         "LOCATION": "redis://127.0.0.1:6379/0",
-        "OPTIONS": {
+        "OPTIONS" : {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
     },
-    "session": {  # session
-        "BACKEND": "django_redis.cache.RedisCache",
+    "session"    : {  # session 缓存后端- session
+        "BACKEND" : "django_redis.cache.RedisCache",
         "LOCATION": "redis://127.0.0.1:6379/1",
-        "OPTIONS": {
+        "OPTIONS" : {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    },
+    "verify_code": {  # verify_code 缓存后端- 验证码相关
+        "BACKEND" : "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/2",
+        "OPTIONS" : {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
     },
 }
+# 表示会话数据将存储在缓存中
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+# 指定了使用哪个缓存后端来存储会话数据
 SESSION_CACHE_ALIAS = "session"
 
 # Password validation
@@ -175,42 +184,42 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # 配置日志文件
 LOGGING = {
-    'version': 1,
+    'version'                 : 1,
     'disable_existing_loggers': False,  # 是否禁用已经存在的日志器
-    'formatters': {  # 日志信息显示的格式
+    'formatters'              : {  # 日志信息显示的格式
         'verbose': {
             'format': '%(levelname)s %(asctime)s %(module)s %(lineno)d %(message)s'
         },
-        'simple': {
+        'simple' : {
             'format': '%(levelname)s %(module)s %(lineno)d %(message)s'
         },
     },
-    'filters': {  # 对日志进行过滤
+    'filters'                 : {  # 对日志进行过滤
         'require_debug_true': {  # django在debug模式下才输出日志
             '()': 'django.utils.log.RequireDebugTrue',
         },
     },
-    'handlers': {  # 日志处理方法
+    'handlers'                : {  # 日志处理方法
         'console': {  # 向终端中输出日志
-            'level': 'INFO',
-            'filters': ['require_debug_true'],
-            'class': 'logging.StreamHandler',
+            'level'    : 'INFO',
+            'filters'  : ['require_debug_true'],
+            'class'    : 'logging.StreamHandler',
             'formatter': 'simple'
         },
-        'file': {  # 向文件中输出日志
-            'level': 'INFO',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': BASE_DIR / 'logs/meiduo.log',  # 日志文件的位置
-            'maxBytes': 300 * 1024 * 1024,
+        'file'   : {  # 向文件中输出日志
+            'level'      : 'INFO',
+            'class'      : 'logging.handlers.RotatingFileHandler',
+            'filename'   : BASE_DIR / 'logs/meiduo.log',  # 日志文件的位置
+            'maxBytes'   : 300 * 1024 * 1024,
             'backupCount': 10,
-            'formatter': 'verbose'
+            'formatter'  : 'verbose'
         },
     },
-    'loggers': {  # 日志器
+    'loggers'                 : {  # 日志器
         'django': {  # 定义了一个名为django的日志器
-            'handlers': ['console', 'file'],  # 可以同时向终端与文件中输出日志
+            'handlers' : ['console', 'file'],  # 可以同时向终端与文件中输出日志
             'propagate': True,  # 是否继续传递日志信息
-            'level': 'INFO',  # 日志器接收的最低日志级别
+            'level'    : 'INFO',  # 日志器接收的最低日志级别
         },
     }
 }

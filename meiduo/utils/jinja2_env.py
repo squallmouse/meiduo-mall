@@ -9,6 +9,10 @@ from django.urls import reverse
 
 def jinja2_environment(**options):
     env = Environment(**options)
+
+    # 确保可以使用模板引擎中的{{ url('') }} {{ static('') }}这类语句
+    # 注意：django 3.2 之后的版本使用staticfiles_storage.url
+    # setting 文件也需要配置
     env.globals.update({
         'static': staticfiles_storage.url, # 静态文件路径
         'url': reverse, # 模板中反向解析url
@@ -16,6 +20,4 @@ def jinja2_environment(**options):
     return env
 
 
-"""
-确保可以使用模板引擎中的{{ url('') }} {{ static('') }}这类语句 
-"""
+
