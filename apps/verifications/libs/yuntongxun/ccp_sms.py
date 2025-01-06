@@ -2,6 +2,7 @@
 # @创建时间: 2025/1/4 08:37   -- yh 
 # @文件名:      ccp_sms.py
 import json
+import logging
 
 from ronglian_sms_sdk import SmsSDK
 
@@ -46,3 +47,5 @@ class CCP(object):
 
 if __name__ == '__main__':
     CCP().send_message('1',"13693542024", "5678")
+
+

@@ -56,10 +56,11 @@ let vm = new Vue({
                         let count = 60
                         let timer = setInterval(() => {
                             if (count === 1) {
-                                clearInterval(timer)
                                 this.msg_code_tip = '获取短信验证码'
                                 this.error_msg_code = false
                                 this.can_send_msg_flag = true
+                                clearInterval(timer)
+                                return
                             }
                             count -= 1
                             this.msg_code_tip = count + '秒'

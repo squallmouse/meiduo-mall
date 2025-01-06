@@ -4,7 +4,7 @@ import re
 from django.contrib.auth import login
 from django.db import DatabaseError
 from django.http import HttpResponseForbidden, JsonResponse
-from django.shortcuts import render, HttpResponse, redirect
+from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views import View
 from django_redis import get_redis_connection
@@ -19,11 +19,13 @@ from meiduo.utils.response_code import RETCODE
 class Register(View):
     """用户注册"""
 
-    def get(self, request):
+    @staticmethod
+    def get(request):
         """返回渲染后的注册页面"""
         return render(request, 'register.html')
 
-    def post(self, request):
+    @staticmethod
+    def post(request):
         """实现用户注册"""
         dict = request.POST
         userName = dict.get('username')
@@ -59,7 +61,8 @@ class Register(View):
         try:
             redis_conn.delete('sms_%s' % mobile)
         except Exception as e:
-            logging.error(e)
+            logging.getLogger("django").error(e)
+
 
         # 保存注册数据
         try:
@@ -79,7 +82,8 @@ class Register(View):
 class UsernameCountView(View):
     """判断用户名是否重复 """
 
-    def get(self, request, username):
+    @staticmethod
+    def get(request, username):
         """查找用户名的数量"""
         count = User.objects.filter(username=username).count()
 
@@ -94,8 +98,10 @@ class UsernameCountView(View):
 class MobileCountView(View):
     """手机号是否重复"""
 
-    def get(self, request, mobile):
+    @staticmethod
+    def get(request, mobile):
         """查找手机号的数量"""
         count = User.objects.filter(mobile=mobile).count()
+        
 
         return JsonResponse({'code': RETCODE.OK, 'errmsg': 'ok', 'count': count})

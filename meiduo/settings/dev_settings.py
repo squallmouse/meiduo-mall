@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     "apps.users.apps.UsersConfig",
     'apps.content.apps.ContentConfig',
-    # 'apps.verifications.apps.VerificationsConfig'
+    'apps.verifications.apps.VerificationsConfig'
 
 ]
 

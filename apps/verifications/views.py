@@ -1,3 +1,5 @@
+from logging import Logger
+
 from django import http
 from django.shortcuts import render
 from django.views import View
@@ -7,6 +9,7 @@ import random, logging
 from apps.verifications.libs.captcha.captcha import captcha
 from meiduo.utils.response_code import RETCODE
 from apps.verifications.libs.yuntongxun.ccp_sms import CCP, expiration_time
+from celery_tasks.sms.tasks import celery_send_sms_code
 
 
 # Create your views here.
@@ -14,7 +17,8 @@ from apps.verifications.libs.yuntongxun.ccp_sms import CCP, expiration_time
 class ImageCodeView(View):
     """ 图形验证码"""
 
-    def get(self, request, uuid):
+    @staticmethod
+    def get(request, uuid):
         """
         :param request: 请求对象
         :param uuid: 唯一标识图形验证码所属于的用户
@@ -35,7 +39,8 @@ class ImageCodeView(View):
 class SMSCodeView(View):
     """短信验证码"""
 
-    def get(self, request, mobile):
+    @staticmethod
+    def get(request, mobile):
         """
         :param request: 请求对象
         :param mobile: 手机号
@@ -57,13 +62,14 @@ class SMSCodeView(View):
 
         # 对比收到的验证码和redis中的验证码是否一致
         if image_code_server != image_code_client:
-            return http.JsonResponse({"code": RETCODE.IMAGECODEERR, "errmsg": "验证码错误"})
+            return http.JsonResponse({"code": RETCODE.IMAGECODEERR, "errmsg": "图片验证码错误"})
 
         # 删除图形验证码，避免恶意测试图形验证码
         try:
             redis_conn.delete(key)
         except Exception as e:
-            logging.error(e)
+            logging.getLogger("django").error(e)
+
 
         send_flag = redis_conn.get("send_flag_%s" % mobile)
         if send_flag:
@@ -73,10 +79,11 @@ class SMSCodeView(View):
         # 生成短信验证码：生成6位数验证码
         sms_code = '%04d' % random.randint(0, 9999)
 
-        code = CCP().send_message("1", mobile, sms_code)
+        # code = CCP().send_message("1", mobile, sms_code)
+        celery_send_sms_code.delay('1', mobile,sms_code)
 
-        if code != 0:
-            return http.JsonResponse({"code": RETCODE.OK, "errmsg": "发送短信失败"})
+        # if code != 0:
+        #     return http.JsonResponse({"code": RETCODE.OK, "errmsg": "发送短信失败"})
         # 短信发送成功
         # 自己生成的验证码,自己存起来
         pl = redis_conn.pipeline()
