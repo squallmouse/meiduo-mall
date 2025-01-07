@@ -10,6 +10,7 @@ from apps.verifications.libs.captcha.captcha import captcha
 from meiduo.utils.response_code import RETCODE
 from apps.verifications.libs.yuntongxun.ccp_sms import CCP, expiration_time
 from celery_tasks.sms.tasks import celery_send_sms_code
+from apps.users.models import User
 
 
 # Create your views here.
@@ -78,9 +79,11 @@ class SMSCodeView(View):
         # 图片验证码正确
         # 生成短信验证码：生成6位数验证码
         sms_code = '%04d' % random.randint(0, 9999)
-
-        # code = CCP().send_message("1", mobile, sms_code)
-        celery_send_sms_code.delay('1', mobile,sms_code)
+# 短信验证码 同步
+        CCP().send_message("1", mobile, sms_code)
+# 开启异步短信验证码
+# 短信验证码
+        # celery_send_sms_code.delay('1', mobile,sms_code)
 
         # if code != 0:
         #     return http.JsonResponse({"code": RETCODE.OK, "errmsg": "发送短信失败"})

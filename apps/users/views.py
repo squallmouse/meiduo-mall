@@ -1,7 +1,8 @@
 import logging
 import re
 
-from django.contrib.auth import login
+from django.contrib.auth import login, authenticate
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import DatabaseError
 from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import render, redirect
@@ -14,6 +15,9 @@ from meiduo.utils.response_code import RETCODE
 
 
 # Create your views here.
+
+class logintest(LoginRequiredMixin,View):
+    pass
 
 
 class Register(View):
@@ -105,3 +109,48 @@ class MobileCountView(View):
         
 
         return JsonResponse({'code': RETCODE.OK, 'errmsg': 'ok', 'count': count})
+
+class LoginView(View):
+    """用户登录"""
+    @staticmethod
+    def get(request):
+        """返回登录页面"""
+        return render(request,"login.html")
+
+    @staticmethod
+    def post(request):
+        """实现用户登录"""
+        dict = request.POST
+        username = dict.get("username")
+        password = dict.get("password")
+        remember = dict.get("remembered")
+
+        #  检验参数是否齐全
+        if not all([username,password]):
+            return HttpResponseForbidden("缺少必传参数")
+        # 检验用户名是否合格 5-20个字符
+        if not re.match(r'^[a-zA-Z0-9_-]{5,20}$',username):
+            return HttpResponseForbidden("用户名错误")
+
+        # 检验密码是否合格 8-20个字符
+        if not re.match(r'^[a-zA-Z0-9_-]{8,20}$',password):
+            return HttpResponseForbidden("密码错误")
+
+        # 认证登录用户
+        user = authenticate(request,username=username,password=password)
+        if user is None:
+            return  render(request,"login.html",{"errmsg":"用户名或密码错误"})
+        # 登录成功
+        login(request,user)
+        if remember != "on":
+            # 不记住,浏览器会话结束就过期
+            request.session.set_expiry(0)
+        else:
+            # 默认就是两周过后
+            request.session.set_expiry(None)
+
+
+        indexHtmlPage = reverse('content:index')
+        response = redirect(indexHtmlPage)
+        response.set_cookie('username',user.username,max_age=14*24*3600)
+        return response

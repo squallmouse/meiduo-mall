@@ -7,3 +7,6 @@
 
 - celery 命令
 > celery -A celery_tasks.main worker -l info
+
+---
+verifications 手机验证码 暂时不开启异步 

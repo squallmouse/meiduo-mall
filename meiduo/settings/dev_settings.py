@@ -226,3 +226,5 @@ LOGGING = {
 
 # 自定义的用户模型类
 AUTH_USER_MODEL = 'users.User'
+# 指定自定义的用户认证后端
+AUTHENTICATION_BACKENDS = ['apps.users.utils.UsernameMobileAuthBackend']

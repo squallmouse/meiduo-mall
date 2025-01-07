@@ -10,8 +10,9 @@ from . import views
 # 命名空间
 app_name = 'users'
 urlpatterns = [
-    path('register/', views.Register.as_view(), name='register'),
+    re_path('^register/$', views.Register.as_view(), name='register'),
     re_path('^usernames/(?P<username>[A-Za-z0-9_-]{5,20})/count/$',views.UsernameCountView.as_view()),
-    re_path('^mobiles/(?P<mobile>1[3-9]\d{9})/count/$',views.MobileCountView.as_view()),
+    re_path('^mobiles/(?P<mobile>1[3-9]\\d{9})/count/$',views.MobileCountView.as_view()),
+    re_path('^login/$',views.LoginView.as_view(),name="login"),
 
 ]
