@@ -1,7 +1,7 @@
 import logging
 import re
 
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import DatabaseError
 from django.http import HttpResponseForbidden, JsonResponse
@@ -80,7 +80,7 @@ class Register(View):
         #   将通过认证的用户的唯一标识信息（比如：用户ID）写入到当前浏览器的 cookie 和服务端的 session 中。
         login(request, user)
 
-        return redirect(reverse('content:index'))
+        return redirect(reverse('contents:index'))
 
 
 class UsernameCountView(View):
@@ -150,7 +150,28 @@ class LoginView(View):
             request.session.set_expiry(None)
 
 
-        indexHtmlPage = reverse('content:index')
+        indexHtmlPage = reverse('contents:index')
         response = redirect(indexHtmlPage)
         response.set_cookie('username',user.username,max_age=14*24*3600)
+        return response
+
+class LogoutView(View):
+    """用户退出登录"""
+    @staticmethod
+    def get(request):
+        """实现用户退出登录"""
+        # 清理session
+        logout(request)
+        # 退出后反向定位到首页
+        response = redirect(reverse('contents:index'))
+        # 清除cookie中的username
+        response.delete_cookie('username')
+        return response
+
+class UserInfoView(LoginRequiredMixin,View):
+    """用户中心-信息页"""
+    @staticmethod
+    def get(request):
+        """提供个人信息界面"""
+        response = render(request, 'user_center_info.html')
         return response
