@@ -9,6 +9,7 @@ class User(AbstractUser):
     # 因为继承自 AbstractUser 类,所以本身含有两个必填字段: username, password
     # 新定义了一个字段, 手机号
     mobile = models.CharField(max_length=11, unique=True, verbose_name="手机号")
+    email_active = models.BooleanField(default=False, verbose_name="邮箱验证状态")
 
     class Meta:
         """

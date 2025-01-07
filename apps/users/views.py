@@ -177,5 +177,11 @@ class UserInfoView(LoginRequiredMixin,View):
     @staticmethod
     def get(request):
         """提供个人信息界面"""
-        response = render(request, 'user_center_info.html')
+        context = {
+            "username":request.user.username,
+            "mobile":request.user.mobile,
+            "email":request.user.email,
+            "email_active":request.user.email_active
+        }
+        response = render(request, 'user_center_info.html',context=context)
         return response
