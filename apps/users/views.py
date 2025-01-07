@@ -149,9 +149,13 @@ class LoginView(View):
             # 默认就是两周过后
             request.session.set_expiry(None)
 
+        next = request.GET.get('next')
+        if next:
+            response = redirect(next)
+        else:
+            indexHtmlPage = reverse('contents:index')
+            response = redirect(indexHtmlPage)
 
-        indexHtmlPage = reverse('contents:index')
-        response = redirect(indexHtmlPage)
         response.set_cookie('username',user.username,max_age=14*24*3600)
         return response
 
