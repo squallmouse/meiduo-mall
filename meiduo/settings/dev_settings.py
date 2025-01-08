@@ -16,6 +16,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+from . import  my_git_ignore
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -101,8 +102,8 @@ DATABASES = {
         'ENGINE'  : 'django.db.backends.mysql',
         'HOST'    : '127.0.0.1',
         'port'    : 3306,
-        'USER'    : 'yuanhaomeiduo',
-        'PASSWORD': 'meiduo123yuanhao',
+        'USER'    : my_git_ignore.MYSQL_USER,
+        'PASSWORD': my_git_ignore.MYSQL_PASSWORD,
         'NAME'    : 'meiduo'
     }
 }
@@ -236,7 +237,9 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend' # 指定邮件后�
 EMAIL_HOST = 'smtp.yeah.net' # 发邮件主机
 EMAIL_PORT = 25 # 发邮件端口
 EMAIL_HOST_USER = 'meiduo_postemail@yeah.net' # 授权的邮箱
-EMAIL_HOST_PASSWORD = 'KLwJcv54mgbz3j3K' # 邮箱授权时获得的密码，非注册登录密码
+
+EMAIL_HOST_PASSWORD = my_git_ignore.EMAIL_HOST_PASSWORD # 邮箱授权时获得的密码，非注册登录密码
+
 EMAIL_FROM = '美多商城<meiduo_postemail@yeah.net>' # 发件人抬头
 
 # 邮箱验证链接
