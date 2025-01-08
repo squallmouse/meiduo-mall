@@ -11,10 +11,11 @@ from django.conf import settings
 SECRET_KEY = settings.SECRET_KEY
 
 
-def generate_verification_token(user_id):
+def generate_verification_token(user_id, email):
     # 设置token的有效期，例如1小时
     payload = {
         'user_id': user_id,
+        "email"  : email,
         'exp'    : datetime.datetime.now(datetime.UTC) + datetime.timedelta(hours=1)
     }
     # 生成JWT token
@@ -36,18 +37,20 @@ def generate_verification_link(token, base_url):
     return verification_link
 
 
-def generate_verify_email_url(user_id):
+def generate_verify_email_url(userid, email):
     """
     生成邮箱验证链接
-    :param user_id: 用户id
+    :param email: 用户验证的邮箱
+    :param userid: 用户id
     :return: verify_url 邮箱验证链接
     """
-    token = generate_verification_token(user_id)
+    token = generate_verification_token(userid, email)
     verify_url = generate_verification_link(token, base_url=settings.EMAIL_VERIFY_URL)
+
     return verify_url
 
 
-def verify_token(token):
+def verify_email_token(token):
     """
     验证token是否有效
 
@@ -63,20 +66,24 @@ def verify_token(token):
     try:
         # 解码JWT token
         payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
-        return payload['user_id']
+        return payload['user_id'], payload['email']
     except jwt.ExpiredSignatureError:
-        return "Token has expired"
+        return "Token has expired", None
     except jwt.InvalidTokenError:
-        return "Invalid token"
+        return "Invalid token", None
 
 
 if __name__ == '__main__':
+    # SECRET_KEY = "123321123fdksajhdfkashdfkashf"
     # 示例使用
-    user_id = 12345  # 假设这是用户的ID
-    token = generate_verification_token(user_id)
-    verification_link = generate_verification_link(token)
+    user_id = 123321123
+    user_email = 'user@example.com'
+
+    token = generate_verification_token(user_id, user_email)
+    verification_link = generate_verification_link(token, 'http://127.0.0.1:8000/emails/verification/')
     print("Verification Link:", verification_link)
 
     # 验证token
-    decoded_user_id = verify_token(token)
+    decoded_user_id, decoded_email = verify_email_token(token)
     print("Decoded User ID:", decoded_user_id)
+    print("Decoded Email:", decoded_email)

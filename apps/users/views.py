@@ -49,7 +49,7 @@ class EmailView(View):
             logging.getLogger("django").error("邮件验证失败~~~")
             return http.JsonResponse({"code": RETCODE.DBERR, "errmsg": "添加邮箱失败"})
 
-        verify_url = generate_verify_email_url(user.id)
+        verify_url = generate_verify_email_url(user.id,email)
         celery_send_verify_email(to_email=email, verify_url=verify_url)
         # try:
         #     send_mail(subject="美多商城验证邮件",

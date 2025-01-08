@@ -1,11 +1,13 @@
 from logging import Logger
 
 from django import http
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.urls import reverse
 from django.views import View
 from django_redis import get_redis_connection
 import random, logging
 
+from apps.users.contants import verify_email_token
 from apps.verifications.libs.captcha.captcha import captcha
 from meiduo.utils.response_code import RETCODE
 from apps.verifications.libs.yuntongxun.ccp_sms import CCP, expiration_time
@@ -16,6 +18,7 @@ from apps.users.models import User
 # Create your views here.
 class EmailVerifyView(View):
     """邮箱验证"""
+
     @staticmethod
     def get(request):
         """
@@ -24,6 +27,28 @@ class EmailVerifyView(View):
         :return: 用户中心
         """
         token = request.GET.get('token')
+        if not token:
+            return http.HttpResponseForbidden('缺少token')
+        userid, email = verify_email_token(token)
+        if userid == "Token has expired":
+            return http.HttpResponseForbidden('邮件验证码过期')
+        elif userid == "Invalid token":
+            return http.HttpResponseForbidden('邮件验证码无效')
+
+        try:
+            user = User.objects.get(id=userid, email=email)
+        except User.DoesNotExist:
+            logging.getLogger("django").error("邮件验证码找不到用户")
+            return None
+        # 用户email 激活
+        try:
+            user.email_active = True
+            user.save()
+        except Exception as e:
+            logging.getLogger("django").error(f"邮件验证码激活失败")
+            return http.HttpResponseForbidden('邮件验证码激活失败')
+
+        return redirect(reverse("users:info"))
 
 
 class ImageCodeView(View):
@@ -50,6 +75,7 @@ class ImageCodeView(View):
 
 class SMSCodeView(View):
     """短信验证码"""
+
     @staticmethod
     def get(request, mobile):
         """
