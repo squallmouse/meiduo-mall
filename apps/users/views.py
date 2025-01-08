@@ -232,3 +232,11 @@ class UserInfoView(LoginRequiredMixin, View):
         }
         response = render(request, 'user_center_info.html', context=context)
         return response
+
+class AddressView(View):
+    """用户中心地址"""
+    @staticmethod
+    def get(request):
+        """提供地址界面"""
+        response = render(request,"user_center_site.html")
+        return response

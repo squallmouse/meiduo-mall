@@ -26,9 +26,11 @@ class EmailVerifyView(View):
         :param request: 请求
         :return: 用户中心
         """
+        # 提取token
         token = request.GET.get('token')
         if not token:
             return http.HttpResponseForbidden('缺少token')
+        # 解析出token中的 userid & email
         userid, email = verify_email_token(token)
         if userid == "Token has expired":
             return http.HttpResponseForbidden('邮件验证码过期')
@@ -47,7 +49,7 @@ class EmailVerifyView(View):
         except Exception as e:
             logging.getLogger("django").error(f"邮件验证码激活失败")
             return http.HttpResponseForbidden('邮件验证码激活失败')
-
+        # 重定向到 用户中心
         return redirect(reverse("users:info"))
 
 

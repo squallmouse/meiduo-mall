@@ -11,7 +11,7 @@ from django.conf import settings
 SECRET_KEY = settings.SECRET_KEY
 
 
-def generate_verification_token(user_id, email):
+def _generate_verification_token(user_id, email):
     # 设置token的有效期，例如1小时
     payload = {
         'user_id': user_id,
@@ -23,7 +23,7 @@ def generate_verification_token(user_id, email):
     return token
 
 
-def generate_verification_link(token, base_url):
+def _generate_verification_link(token, base_url):
     """
 
     :param token:
@@ -44,8 +44,8 @@ def generate_verify_email_url(userid, email):
     :param userid: 用户id
     :return: verify_url 邮箱验证链接
     """
-    token = generate_verification_token(userid, email)
-    verify_url = generate_verification_link(token, base_url=settings.EMAIL_VERIFY_URL)
+    token = _generate_verification_token(userid, email)
+    verify_url = _generate_verification_link(token, base_url=settings.EMAIL_VERIFY_URL)
 
     return verify_url
 
@@ -79,8 +79,8 @@ if __name__ == '__main__':
     user_id = 123321123
     user_email = 'user@example.com'
 
-    token = generate_verification_token(user_id, user_email)
-    verification_link = generate_verification_link(token, 'http://127.0.0.1:8000/emails/verification/')
+    token = _generate_verification_token(user_id, user_email)
+    verification_link = _generate_verification_link(token, 'http://127.0.0.1:8000/emails/verification/')
     print("Verification Link:", verification_link)
 
     # 验证token
