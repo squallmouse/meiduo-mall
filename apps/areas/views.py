@@ -42,7 +42,7 @@ class AreasView(View):
             if not sub_data:
                 try:
                     area = Area.objects.get(id=area_id)
-                    areas = Area.objects.filter(parent=area)
+                    areas = area.subs.all()
 
                 except Area.DoesNotExist:
                     return http.JsonResponse({"code": RETCODE.NODATAERR, "errmsg": "市区数据查找错误"})
