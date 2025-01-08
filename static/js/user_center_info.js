@@ -43,7 +43,7 @@ let vm = new Vue({
             // 检查email格式
             this.check_email();
 
-            if (this.error_email == false) {
+            if (this.error_email === false) {
                 let url = '/emails/';
                 axios.put(url, {
                     email: this.email
@@ -54,7 +54,7 @@ let vm = new Vue({
                     responseType: 'json'
                 })
                     .then(response => {
-                        if (response.data.code == '0') {
+                        if (response.data.code === '0') {
                             this.set_email = false;
                             this.send_email_btn_disabled = true;
                             this.send_email_tip = '已发送验证邮件';

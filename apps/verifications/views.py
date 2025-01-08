@@ -14,6 +14,17 @@ from apps.users.models import User
 
 
 # Create your views here.
+class EmailVerifyView(View):
+    """邮箱验证"""
+    @staticmethod
+    def get(request):
+        """
+        提取token ; 邮箱验证
+        :param request: 请求
+        :return: 用户中心
+        """
+        token = request.GET.get('token')
+
 
 class ImageCodeView(View):
     """ 图形验证码"""
@@ -39,7 +50,6 @@ class ImageCodeView(View):
 
 class SMSCodeView(View):
     """短信验证码"""
-
     @staticmethod
     def get(request, mobile):
         """
@@ -71,7 +81,6 @@ class SMSCodeView(View):
         except Exception as e:
             logging.getLogger("django").error(e)
 
-
         send_flag = redis_conn.get("send_flag_%s" % mobile)
         if send_flag:
             return http.JsonResponse({"code": RETCODE.THROTTLINGERR, "errmsg": "发送短信过于频繁"})
@@ -79,11 +88,11 @@ class SMSCodeView(View):
         # 图片验证码正确
         # 生成短信验证码：生成6位数验证码
         sms_code = '%04d' % random.randint(0, 9999)
-# 短信验证码 同步
-        CCP().send_message("1", mobile, sms_code)
-# 开启异步短信验证码
-# 短信验证码
-        # celery_send_sms_code.delay('1', mobile,sms_code)
+        # 短信验证码 -->> 同步
+        # CCP().send_message("1", mobile, sms_code)
+        # 开启短信验证码 -->> 异步
+        # 短信验证码
+        celery_send_sms_code.delay('1', mobile, sms_code)
 
         # if code != 0:
         #     return http.JsonResponse({"code": RETCODE.OK, "errmsg": "发送短信失败"})

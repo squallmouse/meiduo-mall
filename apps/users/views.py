@@ -1,8 +1,13 @@
+# -*- coding: UTF-8 -*-
+import json
 import logging
 import re
 
+from django import http
+from django.conf import settings
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.mail import send_mail
 from django.db import DatabaseError
 from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import render, redirect
@@ -10,14 +15,55 @@ from django.urls import reverse
 from django.views import View
 from django_redis import get_redis_connection
 
+from apps.users.contants import generate_verify_email_url
 from apps.users.models import User
+from celery_tasks.email.tasks import celery_send_verify_email
 from meiduo.utils.response_code import RETCODE
 
 
 # Create your views here.
 
-class logintest(LoginRequiredMixin,View):
-    pass
+class EmailView(View):
+    """添加邮箱"""
+
+    @staticmethod
+    def put(request):
+        """实现添加邮箱逻辑"""
+
+        user = request.user
+        if not request.user.is_authenticated:
+            return http.JsonResponse({"code": RETCODE.SESSIONERR, "errmsg": "用户未登录"})
+
+        json_dict = json.loads(request.body.decode())
+        email = json_dict.get("email")
+
+        if not email:
+            return HttpResponseForbidden("缺少必传参数")
+        if not re.match(r'^[a-z0-9][\w\.\-]*@[a-z0-9\-]+(\.[a-z]{2,5}){1,2}$', email):
+            return HttpResponseForbidden("邮箱格式错误")
+
+        try:
+            user.email = email
+            user.save()
+        except DatabaseError:
+            logging.getLogger("django").error("邮件验证失败~~~")
+            return http.JsonResponse({"code": RETCODE.DBERR, "errmsg": "添加邮箱失败"})
+
+        verify_url = generate_verify_email_url(user.id)
+        celery_send_verify_email(to_email=email, verify_url=verify_url)
+        # try:
+        #     send_mail(subject="美多商城验证邮件",
+        #               message="一小时有效期",
+        #               from_email=settings.EMAIL_FROM,
+        #               recipient_list=[email],
+        #               html_message="<p>verify_url</p>"
+        #               )
+        # except Exception as e:
+        #     print("邮件发送失败")
+        #     print(f"==> %s" % e)
+        #     logging.getLogger("django").error(e)
+
+        return http.JsonResponse({"code": RETCODE.OK, "errmsg": "添加邮件成功"})
 
 
 class Register(View):
@@ -40,7 +86,7 @@ class Register(View):
         msg_code_client = dict.get('sms_code')
 
         # 判断参数是否齐全
-        if not all([userName, password, password2, mobile, allow,msg_code_client]):
+        if not all([userName, password, password2, mobile, allow, msg_code_client]):
             return HttpResponseForbidden('缺少必传参数')
         # 判断用户名是否是5-20个字符
         if not re.match(r'^[a-zA-Z0-9-_]{5,20}$', userName):
@@ -66,7 +112,6 @@ class Register(View):
             redis_conn.delete('sms_%s' % mobile)
         except Exception as e:
             logging.getLogger("django").error(e)
-
 
         # 保存注册数据
         try:
@@ -96,9 +141,6 @@ class UsernameCountView(View):
         return JsonResponse({'code': RETCODE.OK, 'errmsg': 'ok', 'count': count})
 
 
-
-
-
 class MobileCountView(View):
     """手机号是否重复"""
 
@@ -106,16 +148,17 @@ class MobileCountView(View):
     def get(request, mobile):
         """查找手机号的数量"""
         count = User.objects.filter(mobile=mobile).count()
-        
 
         return JsonResponse({'code': RETCODE.OK, 'errmsg': 'ok', 'count': count})
 
+
 class LoginView(View):
     """用户登录"""
+
     @staticmethod
     def get(request):
         """返回登录页面"""
-        return render(request,"login.html")
+        return render(request, "login.html")
 
     @staticmethod
     def post(request):
@@ -126,22 +169,22 @@ class LoginView(View):
         remember = dict.get("remembered")
 
         #  检验参数是否齐全
-        if not all([username,password]):
+        if not all([username, password]):
             return HttpResponseForbidden("缺少必传参数")
         # 检验用户名是否合格 5-20个字符
-        if not re.match(r'^[a-zA-Z0-9_-]{5,20}$',username):
+        if not re.match(r'^[a-zA-Z0-9_-]{5,20}$', username):
             return HttpResponseForbidden("用户名错误")
 
         # 检验密码是否合格 8-20个字符
-        if not re.match(r'^[a-zA-Z0-9_-]{8,20}$',password):
+        if not re.match(r'^[a-zA-Z0-9_-]{8,20}$', password):
             return HttpResponseForbidden("密码错误")
 
         # 认证登录用户
-        user = authenticate(request,username=username,password=password)
+        user = authenticate(request, username=username, password=password)
         if user is None:
-            return  render(request,"login.html",{"errmsg":"用户名或密码错误"})
+            return render(request, "login.html", {"errmsg": "用户名或密码错误"})
         # 登录成功
-        login(request,user)
+        login(request, user)
         if remember != "on":
             # 不记住,浏览器会话结束就过期
             request.session.set_expiry(0)
@@ -156,11 +199,13 @@ class LoginView(View):
             indexHtmlPage = reverse('contents:index')
             response = redirect(indexHtmlPage)
 
-        response.set_cookie('username',user.username,max_age=14*24*3600)
+        response.set_cookie('username', user.username, max_age=14 * 24 * 3600)
         return response
+
 
 class LogoutView(View):
     """用户退出登录"""
+
     @staticmethod
     def get(request):
         """实现用户退出登录"""
@@ -172,16 +217,18 @@ class LogoutView(View):
         response.delete_cookie('username')
         return response
 
-class UserInfoView(LoginRequiredMixin,View):
+
+class UserInfoView(LoginRequiredMixin, View):
     """用户中心-信息页"""
+
     @staticmethod
     def get(request):
         """提供个人信息界面"""
         context = {
-            "username":request.user.username,
-            "mobile":request.user.mobile,
-            "email":request.user.email,
-            "email_active":request.user.email_active
+            "username"    : request.user.username,
+            "mobile"      : request.user.mobile,
+            "email"       : request.user.email,
+            "email_active": request.user.email_active
         }
-        response = render(request, 'user_center_info.html',context=context)
+        response = render(request, 'user_center_info.html', context=context)
         return response
