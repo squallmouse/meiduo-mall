@@ -1,6 +1,5 @@
 from django import http
-from django.shortcuts import render
-# from django.utils import http
+from django.core.cache import cache
 from django.views import View
 
 from apps.areas.models import Area
@@ -19,53 +18,47 @@ class AreasView(View):
         area_id = request.GET.get("area_id")
         # 如果没有area_id 参数, 查询省份数据
         if not area_id:
-            try:
-            # 查找出省份数据
-                provinces = Area.objects.filter(parent=None)
-            except Area.DoesNotExist:
-                return http.JsonResponse({"code": RETCODE.NODATAERR, "errmsg": "没有数据"})
-            else:
-                province_list = []
-                # for -- in  批量循环装入数据
-                for province in provinces:
-                    item = {
-                        "name": province.name,
-                        "id"  : province.id,
-                    }
-                    province_list.append(item)
+            province_list = cache.get("province_list")
+            if not province_list:
+                try:
+                    # 查找出省份数据
+                    provinces = Area.objects.filter(parent=None)
+                    cache.set("province_list",provinces, 3600)
+                except Area.DoesNotExist:
+                    return http.JsonResponse({"code": RETCODE.NODATAERR, "errmsg": "省级数据查找错误"})
+                else:
+                    province_list = []
+                    # for -- in  批量循环装入数据
+                    for province in provinces:
+                        item = {"name": province.name, "id": province.id, }
+                        province_list.append(item)
+                    cache.set("province_list", province_list, 3600)
             # 返回数据
             return http.JsonResponse({"code": 0, "errmsg": "ok", "province_list": province_list})
         else:
             # 查找 市 或 地区
             # 由area_id 查找 省或市
-            try:
-                area = Area.objects.get(id=area_id)
-                areas = Area.objects.filter(parent=area)
-            except Area.DoesNotExist:
-                return http.JsonResponse({"code": RETCODE.NODATAERR, "errmsg": "没有数据"})
-            else:
-                subs = []
-                for city in areas:
-                    item = {
-                        "name": city.name,
-                        "id"  : city.id,
-                    }
-                    subs.append(item)
-                sub_data = {
-                    "id"  : area.id,
-                    "name": area.name,
-                    "subs": subs
-                }
-            return http.JsonResponse({"code": RETCODE.OK, "errmsg": "ok", "sub_data": sub_data})
-            # if area.parent is None:
-            #     #  area是省份,查找 市
-            #     for city in areas:
-            #         item = {
-            #             "name": city.name,
-            #             "id":city.id,
-            #         }
-            #         subs.append(item)
-            # else:
-            #     #  area是市,查找 区
+            sub_data = cache.get("sub_area_" + area_id)
+            if not sub_data:
+                try:
+                    area = Area.objects.get(id=area_id)
+                    areas = Area.objects.filter(parent=area)
 
-        return http.JsonResponse({"code": 0, "errmsg": "ok", "province_list": []})
+                except Area.DoesNotExist:
+                    return http.JsonResponse({"code": RETCODE.NODATAERR, "errmsg": "市区数据查找错误"})
+                else:
+                    subs = []
+                    for city in areas:
+                        item = {"name": city.name, "id": city.id, }
+                        subs.append(item)
+                    sub_data = {
+                        "id"  : area.id,
+                        "name": area.name,
+                        "subs": subs
+                    }
+
+                    cache.set("sub_area_" + area_id, sub_data, 3600)
+
+            return http.JsonResponse({"code": RETCODE.OK, "errmsg": "ok", "sub_data": sub_data})
+
+
