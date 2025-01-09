@@ -243,7 +243,7 @@ class AddressView(View):
         """提供地址界面"""
         user = request.user
         address_list = []
-        temp = user.address.all()
+        temp = Address.objects.filter(user = user,is_delete = False)
         for address in temp:
             item = {
                 "id"      : address.id,
@@ -404,9 +404,6 @@ class UpdateDestroyAddressView(LoginRequiredJSONMixin, View):
                 "province": {"name": address.province.name, "id": address.province.id},
                 "city"    : {"name": address.city.name, "id": address.city.id},
                 "district": {"name": address.distract.name, "id": address.distract.id},
-                # "province_id": address.province,
-                # "city_id"    : address.city,
-                # "district_id": address.distract,
                 "place"   : address.place,
                 "mobile"  : address.mobile,
                 "tel"     : address.tel,
@@ -414,3 +411,32 @@ class UpdateDestroyAddressView(LoginRequiredJSONMixin, View):
             }
             # 返回响应结果
             return http.JsonResponse({"code": RETCODE.OK, "errmsg": "新增地址成功", "address": address_dict})
+
+    @staticmethod
+    def delete(request, address_id):
+        """删除地址"""
+        try:
+            address = Address.objects.get(id=address_id)
+            address.is_delete = True
+            address.save()
+        except DatabaseError as e:
+            logging.getLogger('django').error(f"删除地址失败 => {e}")
+            return http.JsonResponse({"code": RETCODE.DBERR, "errmsg": "删除地址失败"})
+        else:
+            return http.JsonResponse({"code":RETCODE.OK,"errmsg":"删除地址成功"})
+
+class DefaultAddressView(LoginRequiredJSONMixin, View):
+    """设置默认地址"""
+
+    @staticmethod
+    def put(request, address_id):
+        """设置默认地址"""
+        try:
+            address = Address.objects.get(id=address_id)
+            request.user.default_address = address
+            request.user.save()
+        except DatabaseError as e:
+            logging.getLogger('django').error(f"设置默认地址失败 => {e}")
+            return http.JsonResponse({"code": RETCODE.NODATAERR, "errmsg": "设置默认地址失败"})
+        else:
+            return http.JsonResponse({"code": RETCODE.OK, "errmsg": "设置默认地址成功"})

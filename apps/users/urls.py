@@ -17,7 +17,8 @@ urlpatterns = [
     re_path('^logout/$', views.LogoutView.as_view(), name="logout"),
     re_path('^info/$', views.UserInfoView.as_view(), name="info"),
     re_path('^emails/$', views.EmailView.as_view()),
-    re_path('^address/$',views.AddressView.as_view(), name="address"),
-    re_path("^addresses/create/$",views.CreateAddressView.as_view()),
-    re_path("^addresses/(?P<address_id>\d+)/$",views.UpdateDestroyAddressView.as_view())
+    re_path('^address/$', views.AddressView.as_view(), name="address"),
+    re_path("^addresses/create/$", views.CreateAddressView.as_view()),
+    re_path("^addresses/(?P<address_id>\d+)/$", views.UpdateDestroyAddressView.as_view()),
+    re_path("^addresses/(?P<address_id>\d+)/default/$", views.DefaultAddressView.as_view()),
 ]
