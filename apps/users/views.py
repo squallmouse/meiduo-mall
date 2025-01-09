@@ -246,19 +246,19 @@ class AddressView(View):
         temp = user.address.all()
         for address in temp:
             item = {
-                "id"         : address.id,
-                "title"      : address.title,
-                "receiver"   : address.receiver,
-                "province"   : {"name":address.province.name, "id":address.province.id},
-                "city"       : {"name":address.city.name, "id":address.city.id},
-                "district"   :{"name":address.distract.name, "id":address.distract.id},
+                "id"      : address.id,
+                "title"   : address.title,
+                "receiver": address.receiver,
+                "province": {"name": address.province.name, "id": address.province.id},
+                "city"    : {"name": address.city.name, "id": address.city.id},
+                "district": {"name": address.distract.name, "id": address.distract.id},
                 # "province_id": address.province,
                 # "city_id"    : address.city,
                 # "district_id": address.distract,
-                "place"      : address.place,
-                "mobile"     : address.mobile,
-                "tel"        : address.tel,
-                "email"      : address.email,
+                "place"   : address.place,
+                "mobile"  : address.mobile,
+                "tel"     : address.tel,
+                "email"   : address.email,
             }
             address_list.append(item)
         context = {
@@ -342,5 +342,75 @@ class UpdateDestroyAddressView(LoginRequiredJSONMixin, View):
     @staticmethod
     def put(request, address_id):
         """修改地址"""
+        body_para = json.loads(request.body.decode())
+        receiver = body_para.get("receiver")
+        province_id = body_para.get("province_id")
+        city_id = body_para.get("city_id")
+        district_id = body_para.get("district_id")
+        place = body_para.get("place")
+        mobile = body_para.get("mobile")
+        tel = body_para.get("tel")
+        email = body_para.get("email")
 
-        pass
+        if not all([receiver, province_id, city_id, district_id, place, mobile]):
+            return http.HttpResponseForbidden("缺少必传参数")
+
+        if not re.match(r"^1[3-9]\d{9}$", mobile):
+            return http.HttpResponseForbidden("参数mobile有误")
+
+        if tel:
+            if not re.match(r"^(0[0-9]{2,3}-)?([2-9][0-9]{6,7})+(-[0-9]{1,4})?$", tel):
+                return http.HttpResponseForbidden("参数tel有误")
+
+        if email:
+            if not re.match(r"^[a-z0-9][\w\.\-]*@[a-z0-9\-]+(\.[a-z]{2,5}){1,2}$", email):
+                return http.HttpResponseForbidden("参数email有误")
+        # {'city'       : {'id': 360100, 'name': '南昌市'},              'city_id': 140300,
+        #  'district'   : {'id': 360111, 'name': '青山湖区'},             'district_id': 140311,
+        #  'email': '',
+        #  'id': 2,
+        #  'mobile'     : '13693542025',
+        #  'place': '万科海上传奇',
+        #  'province': {'id': 360000, 'name': '江西省'},
+        #  'province_id': 140000,
+        #  'receiver': '小旺仔',
+        #  'tel': '',
+        #  'title': ''}
+        try:
+            Address.objects.filter(id=address_id).update(
+                tel=tel,
+                email=email,
+                receiver=receiver,
+                province_id=province_id,
+                city_id=city_id,
+                distract_id=district_id,
+                place=place,
+                mobile=mobile
+            )
+        except DatabaseError as e:
+            logging.getLogger('django').error(f"修改地址失败 => {e}")
+            return http.JsonResponse({"code": RETCODE.DBERR, "errmsg": "修改地址失败"})
+
+        try:
+            address = Address.objects.get(id=address_id)
+        except DatabaseError as e:
+            logging.getLogger('django').error(f"修改地址失败 => {e}")
+            return http.JsonResponse({"code": RETCODE.DBERR, "errmsg": "地址不存在"})
+        else:
+            address_dict = {
+                "id"      : address.id,
+                "title"   : address.title,
+                "receiver": address.receiver,
+                "province": {"name": address.province.name, "id": address.province.id},
+                "city"    : {"name": address.city.name, "id": address.city.id},
+                "district": {"name": address.distract.name, "id": address.distract.id},
+                # "province_id": address.province,
+                # "city_id"    : address.city,
+                # "district_id": address.distract,
+                "place"   : address.place,
+                "mobile"  : address.mobile,
+                "tel"     : address.tel,
+                "email"   : address.email,
+            }
+            # 返回响应结果
+            return http.JsonResponse({"code": RETCODE.OK, "errmsg": "新增地址成功", "address": address_dict})
