@@ -33,6 +33,8 @@ let vm = new Vue({
     mounted() {
         // 获取省份数据
         this.get_provinces();
+        console.log("begin ~~~~ ")
+        console.log(this.addresses)
     },
     watch: {
         // 监听到省份id变化

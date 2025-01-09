@@ -16,9 +16,10 @@ from django.views import View
 from django_redis import get_redis_connection
 
 from apps.users.contants import generate_verify_email_url
-from apps.users.models import User
+from apps.users.models import User, Address
 from celery_tasks.email.tasks import celery_send_verify_email
 from meiduo.utils.response_code import RETCODE
+from meiduo.utils.views import LoginRequiredJSONMixin
 
 
 # Create your views here.
@@ -49,7 +50,7 @@ class EmailView(View):
             logging.getLogger("django").error("邮件验证失败~~~")
             return http.JsonResponse({"code": RETCODE.DBERR, "errmsg": "添加邮箱失败"})
 
-        verify_url = generate_verify_email_url(user.id,email)
+        verify_url = generate_verify_email_url(user.id, email)
         celery_send_verify_email(to_email=email, verify_url=verify_url)
         # try:
         #     send_mail(subject="美多商城验证邮件",
@@ -233,10 +234,108 @@ class UserInfoView(LoginRequiredMixin, View):
         response = render(request, 'user_center_info.html', context=context)
         return response
 
+
 class AddressView(View):
     """用户中心地址"""
+
     @staticmethod
     def get(request):
         """提供地址界面"""
-        response = render(request,"user_center_site.html")
+        user = request.user
+        address_list = []
+        temp = user.address.all()
+        for address in temp:
+            item = {
+                "id"      : address.id,
+                "title"   : address.title,
+                "receiver": address.receiver,
+                "province": address.province.name,
+                "city"    : address.city.name,
+                "distract": address.distract.name,
+                "place"   : address.place,
+                "mobile"  : address.mobile,
+                "tel"     : address.tel,
+                "email"   : address.email,
+            }
+            address_list.append(item)
+        context = {
+            "default_address_id": user.default_address_id,
+            "addresses"         : address_list
+        }
+        response = render(request, "user_center_site.html", context=context)
         return response
+
+
+class CreateAddressView(LoginRequiredJSONMixin, View):
+    """用户中心 创建地址"""
+
+    @staticmethod
+    def post(request):
+        """保存用户新地址"""
+        body_para = json.loads(request.body.decode())
+        receiver = body_para.get("receiver")
+        province_id = body_para.get("province_id")
+        city_id = body_para.get("city_id")
+        district_id = body_para.get("district_id")
+        place = body_para.get("place")
+        mobile = body_para.get("mobile")
+        tel = body_para.get("tel")
+        email = body_para.get("email")
+
+        if not all([receiver, province_id, city_id, district_id, place, mobile]):
+            return http.HttpResponseForbidden("缺少必传参数")
+
+        if not re.match(r"^1[3-9]\d{9}$", mobile):
+            return http.HttpResponseForbidden("参数mobile有误")
+
+        if tel:
+            if not re.match(r"^(0[0-9]{2,3}-)?([2-9][0-9]{6,7})+(-[0-9]{1,4})?$", tel):
+                return http.HttpResponseForbidden("参数tel有误")
+
+        if email:
+            if not re.match(r"^[a-z0-9][\w\.\-]*@[a-z0-9\-]+(\.[a-z]{2,5}){1,2}$", email):
+                return http.HttpResponseForbidden("参数email有误")
+
+        #       保存地址
+        try:
+            address = Address.objects.create(
+                user=request.user,
+                receiver=receiver,
+                province_id=province_id,
+                city_id=city_id,
+                distract_id=district_id,
+                place=place,
+                mobile=mobile,
+                tel=tel,
+                email=email
+            )
+            #     设置默认收货地址
+            if request.user.default_address is None:
+                request.user.default_address = address
+                request.user.save()
+
+        except DatabaseError as e:
+            logging.getLogger('django').error(f"保存地址失败 => {e}")
+            return http.HttpResponseServerError("保存地址失败")
+        address_dict = {
+            "id"      : address.id,
+            "title"   : address.title,
+            "receiver": address.receiver,
+            "province": address.province.name,
+            "city"    : address.city.name,
+            "distract": address.distract.name,
+            "place"   : address.place,
+            "mobile"  : address.mobile,
+            "tel"     : address.tel,
+            "email"   : address.email,
+        }
+        # 返回响应结果
+        return http.JsonResponse({"code": RETCODE.OK, "errmsg": "新增地址成功", "address": address_dict})
+
+class UpdateDestroyAddressView(LoginRequiredJSONMixin,View):
+    """修改和删除收货地址"""
+    @staticmethod
+    def put(request,address_id):
+        """修改地址"""
+
+        pass
