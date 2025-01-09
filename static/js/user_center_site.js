@@ -106,7 +106,22 @@ let vm = new Vue({
             this.clear_all_errors();
             this.editing_address_index = index.toString();
             // 只获取要编辑的数据
-            this.form_address = JSON.parse(JSON.stringify(this.addresses[index]));
+            res = JSON.parse(JSON.stringify(this.addresses[index]));
+            console.log(res)
+            // this.form_address = JSON.parse(JSON.stringify(this.addresses[index]));
+            this.form_address= {
+            receiver: res.receiver,
+            province_id: res.province.id,
+            city_id: res.city.id,
+            district_id: res.district.id,
+            place: res.place,
+            mobile: res.mobile,
+            tel: res.tel,
+            email: res.email,
+            province: res.province,
+            city: res.city,
+            district: res.district,
+        },
             console.log(this.form_address)
 
         },
