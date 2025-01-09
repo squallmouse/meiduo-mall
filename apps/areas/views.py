@@ -1,9 +1,14 @@
+import json
+import logging
+
 from django import http
 from django.core.cache import cache
 from django.views import View
 
 from apps.areas.models import Area
+from apps.users.models import Address
 from meiduo.utils.response_code import RETCODE
+from meiduo.utils.views import LoginRequiredJSONMixin
 
 
 # Create your views here.
@@ -62,3 +67,19 @@ class AreasView(View):
             return http.JsonResponse({"code": RETCODE.OK, "errmsg": "ok", "sub_data": sub_data})
 
 
+class UpdateTitleAddressView(LoginRequiredJSONMixin,View):
+    """设置地址标题"""
+    @staticmethod
+    def put(request,address_id):
+        """设置地址标题"""
+        body_para = json.loads(request.body.decode())
+        title = body_para.get("title")
+        try:
+            address = Address.objects.get(id=address_id)
+            address.title = title
+            address.save()
+        except Exception as e:
+            logging.getLogger("django").error(f"设置地址标题错误 ==> {e}")
+            return http.JsonResponse({"code": RETCODE.DBERR, "errmsg": "设置地址标题错误"})
+        else:
+            return http.JsonResponse({"code": RETCODE.OK, "errmsg": "ok"})
