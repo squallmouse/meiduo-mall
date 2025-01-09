@@ -13,6 +13,9 @@ let vm = new Vue({
             mobile: '',
             tel: '',
             email: '',
+            province: '',
+            city: '',
+            district: '',
         },
 
         provinces: [],
@@ -104,6 +107,8 @@ let vm = new Vue({
             this.editing_address_index = index.toString();
             // 只获取要编辑的数据
             this.form_address = JSON.parse(JSON.stringify(this.addresses[index]));
+            console.log(this.form_address)
+
         },
         // 校验收货人
         check_receiver(){

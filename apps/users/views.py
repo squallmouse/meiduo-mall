@@ -246,16 +246,19 @@ class AddressView(View):
         temp = user.address.all()
         for address in temp:
             item = {
-                "id"      : address.id,
-                "title"   : address.title,
-                "receiver": address.receiver,
-                "province": address.province.name,
-                "city"    : address.city.name,
-                "distract": address.distract.name,
-                "place"   : address.place,
-                "mobile"  : address.mobile,
-                "tel"     : address.tel,
-                "email"   : address.email,
+                "id"         : address.id,
+                "title"      : address.title,
+                "receiver"   : address.receiver,
+                "province"   : {"name":address.province.name, "id":address.province.id},
+                "city"       : {"name":address.city.name, "id":address.city.id},
+                "district"   :{"name":address.distract.name, "id":address.distract.id},
+                # "province_id": address.province,
+                # "city_id"    : address.city,
+                # "district_id": address.distract,
+                "place"      : address.place,
+                "mobile"     : address.mobile,
+                "tel"        : address.tel,
+                "email"      : address.email,
             }
             address_list.append(item)
         context = {
@@ -332,10 +335,12 @@ class CreateAddressView(LoginRequiredJSONMixin, View):
         # 返回响应结果
         return http.JsonResponse({"code": RETCODE.OK, "errmsg": "新增地址成功", "address": address_dict})
 
-class UpdateDestroyAddressView(LoginRequiredJSONMixin,View):
+
+class UpdateDestroyAddressView(LoginRequiredJSONMixin, View):
     """修改和删除收货地址"""
+
     @staticmethod
-    def put(request,address_id):
+    def put(request, address_id):
         """修改地址"""
 
         pass
