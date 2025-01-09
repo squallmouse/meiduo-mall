@@ -275,6 +275,11 @@ class CreateAddressView(LoginRequiredJSONMixin, View):
     @staticmethod
     def post(request):
         """保存用户新地址"""
+        # 判断地址是否超过上限
+        count = Address.objects.filter(user=request.user, is_delete=False).count()
+        if count > 20:
+            return JsonResponse({"code": RETCODE.THROTTLINGERR, "errmsg": "超过地址数量上限"})
+        # 接收参数
         body_para = json.loads(request.body.decode())
         receiver = body_para.get("receiver")
         province_id = body_para.get("province_id")
@@ -320,6 +325,7 @@ class CreateAddressView(LoginRequiredJSONMixin, View):
         except DatabaseError as e:
             logging.getLogger('django').error(f"保存地址失败 => {e}")
             return http.HttpResponseServerError("保存地址失败")
+        # 新增地址成功，将新增的地址响应给前端实现局部刷新
         address_dict = {
             "id"      : address.id,
             "title"   : address.title,
