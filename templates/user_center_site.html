@@ -115,13 +115,13 @@
         <p>CopyRight © 2016 北京美多商业股份有限公司 All Rights Reserved</p>
         <p>电话：010-****888 京ICP备*******8号</p>
     </div>
-
-    <div class="pop_con" v-if="is_show_edit" v-cloak>
+{#      ----------- 新增 & 收货地址  -------------        #}
+    <div class="pop_con" v-show="is_show_edit" v-cloak>
         <div class="site_con site_pop">
             <div class="site_pop_title">
                 <h3 v-if="editing_address_index">编辑收货地址</h3>
                 <h3 v-else>新增收货地址</h3>
-                <a @click="is_show_edit=false">X</a>
+                <a @click="is_show_edit=false">x</a>
             </div>
             <form>
 
