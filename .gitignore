@@ -185,3 +185,5 @@ node_modules/
 node_modules
 /celery
 meiduo/settings/my_git_ignore.py
+
+meiduo/utils/fastdfs/client.conf
