@@ -4,10 +4,8 @@ import logging
 import re
 
 from django import http
-from django.conf import settings
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.mail import send_mail
 from django.db import DatabaseError
 from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import render, redirect
@@ -278,7 +276,7 @@ class CreateAddressView(LoginRequiredJSONMixin, View):
         # 判断地址是否超过上限
         count = Address.objects.filter(user=request.user, is_delete=False).count()
         if count > 20:
-            return JsonResponse({"code": RETCODE.THROTTLINGERR, "errmsg": "超过地址数量上限"})
+            return JsonResponse({"code": RETCODE.THROTTLINGERR,"errmsg": "超过地址数量上限"})
         # 接收参数
         body_para = json.loads(request.body.decode())
         receiver = body_para.get("receiver")
