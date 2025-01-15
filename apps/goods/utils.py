@@ -17,14 +17,14 @@ def get_breadcrumb(category:GoodsCategory):
     }
     if category.parent is None:
 #         一级
-        breadcrumb['cat1']=category.name
+        breadcrumb['cat1']=category
     elif category.parent.parent is None:
 #         二级
-        breadcrumb['cat2'] = category.name
-        breadcrumb['cat1'] = category.parent.name
+        breadcrumb['cat2'] = category
+        breadcrumb['cat1'] = category.parent
     else:
 #         三级
-        breadcrumb['cat3'] = category.name
-        breadcrumb['cat2'] = category.parent.name
-        breadcrumb['cat1'] = category.parent.parent.name
+        breadcrumb['cat3'] = category
+        breadcrumb['cat2'] = category.parent
+        breadcrumb['cat1'] = category.parent.parent
     return breadcrumb

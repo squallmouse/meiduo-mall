@@ -1,9 +1,9 @@
 # -*- coding: UTF-8 -*-
 # @创建时间: 2025/1/15 10:01   -- yh 
 # @文件名:      fdfs_storage.py
-
+from django.conf import settings
 from django.core.files.storage import Storage
-from meiduo.settings import dev_settings
+# from meiduo.settings import dev_settings
 
 
 class FastDFSStorage(Storage):
@@ -13,7 +13,7 @@ class FastDFSStorage(Storage):
         构造方法，可以不带参数，也可以携带参数
         :param fdfs_base_url: Storage的IP
         """
-        self.fdfs_base_url = fdfs_base_url or dev_settings.FDFS_BASE_URL
+        self.fdfs_base_url = fdfs_base_url or settings.FDFS_BASE_URL
 
     def _open(self, name, mode='rb'):
         # 打开文件时调用 : 文档说必须重写
