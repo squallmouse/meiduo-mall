@@ -260,7 +260,7 @@ class AddressView(View):
             }
             address_list.append(item)
         context = {
-            "default_address_id": user.default_address_id,
+            "default_address_id": user.default_address_id or '0',
             "addresses"         : address_list
         }
         response = render(request, "user_center_site.html", context=context)
