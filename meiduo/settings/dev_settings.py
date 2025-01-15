@@ -16,7 +16,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
-from . import  my_git_ignore
+from . import my_git_ignore
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -78,11 +78,11 @@ TEMPLATES = [
         },
     },
     {  # 原来的django模板引擎
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR.parent / 'templates']
+        'BACKEND' : 'django.template.backends.django.DjangoTemplates',
+        'DIRS'    : [BASE_DIR.parent / 'templates']
         ,
         'APP_DIRS': True,
-        'OPTIONS': {
+        'OPTIONS' : {
             'context_processors': [
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
@@ -234,14 +234,21 @@ AUTHENTICATION_BACKENDS = ['apps.users.utils.UsernameMobileAuthBackend']
 
 LOGIN_URL = '/login/'
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend' # 指定邮件后端
-EMAIL_HOST = 'smtp.yeah.net' # 发邮件主机
-EMAIL_PORT = 25 # 发邮件端口
-EMAIL_HOST_USER = 'meiduo_postemail@yeah.net' # 授权的邮箱
+# 邮件
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'  # 指定邮件后端
+EMAIL_HOST = 'smtp.yeah.net'  # 发邮件主机
+EMAIL_PORT = 25  # 发邮件端口
+EMAIL_HOST_USER = 'meiduo_postemail@yeah.net'  # 授权的邮箱
 
-EMAIL_HOST_PASSWORD = my_git_ignore.EMAIL_HOST_PASSWORD # 邮箱授权时获得的密码，非注册登录密码
+EMAIL_HOST_PASSWORD = my_git_ignore.EMAIL_HOST_PASSWORD  # 邮箱授权时获得的密码，非注册登录密码
 
-EMAIL_FROM = '美多商城<meiduo_postemail@yeah.net>' # 发件人抬头
+EMAIL_FROM = '美多商城<meiduo_postemail@yeah.net>'  # 发件人抬头
 
 # 邮箱验证链接
 EMAIL_VERIFY_URL = 'http://127.0.0.1:8000/emails/verification/'
+
+# 指定自定义的Django文件存储类
+DEFAULT_FILE_STORAGE = 'meiduo.utils.fastdfs.fdfs_storage.FastDFSStorage'
+
+# FastDFS相关参数
+FDFS_BASE_URL = 'http://23.95.240.187:8888/'

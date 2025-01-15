@@ -1,6 +1,7 @@
 from django.db import models
 
 from meiduo.utils.models import BaseModel
+from meiduo.utils.fastdfs.fdfs_storage import FastDFSStorage
 
 
 # Create your models here.
@@ -50,7 +51,7 @@ class GoodsChannel(BaseModel):
 class Brand(BaseModel):
     """品牌"""
     name = models.CharField(max_length=20, verbose_name='名称')
-    logo = models.ImageField(verbose_name='Logo图片')
+    logo = models.ImageField(storage=FastDFSStorage, verbose_name='Logo图片')
     first_letter = models.CharField(max_length=1, verbose_name='品牌首字母')
 
     class Meta:
@@ -111,7 +112,7 @@ class SKU(BaseModel):
 class SKUImage(BaseModel):
     """SKU图片"""
     sku = models.ForeignKey(SKU, on_delete=models.CASCADE, verbose_name='sku')
-    image = models.ImageField(verbose_name='图片')
+    image = models.ImageField(storage=FastDFSStorage(), verbose_name='图片')
 
     class Meta:
         db_table = 'tb_sku_image'
