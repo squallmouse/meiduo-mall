@@ -32,8 +32,8 @@ class FastDFSStorage(Storage):
         """
         # return self.fdfs_base_url + name
         # return "http://23.95.240.187:8888/" + name
-        print(f"Base URL: {self.fdfs_base_url}")  # 调试输出
-        print(f"File name: {name}")  # 调试输出
+        # print(f"Base URL: {self.fdfs_base_url}")  # 调试输出
+        # print(f"File name: {name}")  # 调试输出
         if not self.fdfs_base_url:
             raise ValueError("The base URL for file storage is not set.")
-        return ''.join([self.fdfs_base_url, name])
+        return self.fdfs_base_url + name
