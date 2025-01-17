@@ -9,4 +9,5 @@ app_name = "goods"
 urlpatterns = [
     re_path("^list/(?P<category_id>\\d+)/(?P<page_num>\\d+)/$", views.ListView.as_view(),
             name="list"),
+    re_path("^hot/(?P<category_id>\\d+)/$",views.HotGoodsView.as_view()),
 ]

@@ -121,16 +121,13 @@
 			<div class="new_goods">
 				<h3>热销排行</h3>
 				<ul>
-					<li>
-						<a href="detail.html"><img src="{{ static('images/goods/goods001.jpg') }}"></a>
-						<h4><a href="detail.html">360手机 N6 Pro 全网通 6GB+128GB 极夜黑</a></h4>
-						<div class="price">￥3999.90</div>
+
+					<li v-for="hot in hot_skus">
+						<a href="hot.url"><img src="hot.default_image_url "></a>
+						<h4><a href="hot.url">[[hot.name]]</a></h4>
+						<div class="price">￥[[hot.price]]</div>
 					</li>
-					<li>
-						<a href="detail.html"><img src="{{ static('images/goods/goods002.jpg') }}"></a>
-						<h4><a href="detail.html">360手机 N6 Pro 全网通 6GB+128GB 极夜黑</a></h4>
-						<div class="price">￥1666.80</div>
-					</li>
+
 				</ul>
 			</div>
 		</div>
@@ -141,52 +138,22 @@
 				<a href="/list/115/1/?sort=hot">人气</a>
 			</div>
 			<ul class="goods_type_list clearfix">
+                {% for sku in page_skus %}
 				<li>
-					<a href="detail.html"><img src="{{ static('images/goods/goods003.jpg') }}"></a>
-					<h4><a href="detail.html">360手机 N6 Pro 全网通 6GB+128GB 极夜黑</a></h4>
+					<a href="detail.html"><img src="{{ sku.default_image.url}}"></a>
+					<h4><a href="detail.html">{{ sku.name}}</a></h4>
 					<div class="operate">
-						<span class="price">￥1666.80</span>
+						<span class="price">￥{{ sku.price }}</span>
 						<span class="unit">台</span>
 						<a href="#" class="add_goods" title="加入购物车"></a>
 					</div>
 				</li>
-				<li>
-					<a href="detail.html"><img src="{{ static('images/goods/goods005.jpg') }}"></a>
-					<h4><a href="detail.html">360手机 N6 Pro 全网通 6GB+128GB 极夜黑</a></h4>
-					<div class="operate">
-						<span class="price">￥1000.00</span>
-						<span class="unit">台</span>
-						<a href="#" class="add_goods" title="加入购物车"></a>
-					</div>
-				</li>
-				<li>
-					<a href="detail.html"><img src="{{ static('images/goods/goods002.jpg') }}"></a>
-					<h4><a href="detail.html">360手机 N6 Pro 全网通 6GB+128GB 极夜黑</a></h4>
-					<div class="operate">
-						<span class="price">￥2888.80</span>
-						<span class="unit">台</span>
-						<a href="#" class="add_goods" title="加入购物车"></a>
-					</div>
-				</li>
-                <li>
-					<a href="detail.html"><img src="{{ static('images/goods/goods003.jpg') }}"></a>
-					<h4><a href="detail.html">360手机 N6 Pro 全网通 6GB+128GB 极夜黑</a></h4>
-					<div class="operate">
-						<span class="price">￥1666.80</span>
-						<span class="unit">台</span>
-						<a href="#" class="add_goods" title="加入购物车"></a>
-					</div>
-				</li>
-				<li>
-					<a href="detail.html"><img src="{{ static('images/goods/goods005.jpg') }}"></a>
-					<h4><a href="detail.html">360手机 N6 Pro 全网通 6GB+128GB 极夜黑</a></h4>
-					<div class="operate">
-						<span class="price">￥1000.00</span>
-						<span class="unit">台</span>
-						<a href="#" class="add_goods" title="加入购物车"></a>
-					</div>
-				</li>
+                {% endfor %}
+
 			</ul>
+        <div class="pagenation">
+        <div id="pagination" class="page"></div>
+    </div>
 		</div>
 	</div>
 	<div class="footer">
@@ -204,7 +171,7 @@
 	</div>
 	</div>
 	<script type="text/javascript">
-        let category_id = "";
+        let category_id = {{category.id}};
     </script>
 	<script type="text/javascript" src="{{ static('js/common.js') }}"></script>
 	<script type="text/javascript" src="{{ static('js/list.js') }}"></script>
@@ -212,11 +179,11 @@
 	<script>
         $(function () {
             $('#pagination').pagination({
-                currentPage: 1,
-                totalPage: 3,
+                currentPage: {{page_num}},
+                totalPage: {{total_page}},
                 callback:function (current) {
                     {#location.href = '/list/115/1/?sort=default';#}
-                    {#location.href = '/list/{{ category.id }}/' + current + '/?sort={{ sort }}';#}
+                    location.href = '/list/{{ category.id }}/' + current + '/?sort={{ sort }}';
                 }
             })
         });
