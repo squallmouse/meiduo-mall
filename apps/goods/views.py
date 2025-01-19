@@ -84,6 +84,7 @@ class ListView(View):
                 'page_skus' : page_skus,  # 分页后数据
                 'total_page': total_page,  # 总页数
                 'page_num'  : page_num,  # 当前页码
+                "category_id":category_id,
             }
 
             return render(request, 'list.html', context=context)
