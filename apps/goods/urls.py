@@ -10,4 +10,6 @@ urlpatterns = [
     re_path("^list/(?P<category_id>\\d+)/(?P<page_num>\\d+)/$", views.ListView.as_view(),
             name="list"),
     re_path("^hot/(?P<category_id>\\d+)/$",views.HotGoodsView.as_view()),
+    re_path("^detail/(?P<sku_id>\\d+)/$",views.DetailView.as_view(),name="detail"),
+# re_path("^detail/$",views.DetailView.as_view(),name="detail"),
 ]
