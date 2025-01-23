@@ -457,6 +457,29 @@ class UserBrowseHistory(LoginRequiredJSONMixin, View):
     """ 用户浏览器 """
 
     @staticmethod
+    def get(request):
+        """ 获取浏览器记录 """
+        user_id = request.user.id
+        redis_conn = get_redis_connection("history")
+        # pl = redis_conn.pipeline()
+        redis_key = "history_%s" % user_id
+        sku_id_list = redis_conn.lrange(redis_key, 0, -1)
+        # pl.execute()
+
+        skus = []
+        for sku_id in sku_id_list:
+            sku = SKU.objects.get(id=sku_id)
+            skus.append({
+                "id"      : sku.id,
+                "name"    : sku.name,
+                "price"   : sku.price,
+                "default_image_url": sku.default_image.url,
+                # "comments": sku.comments
+            })
+
+        return http.JsonResponse({"code": RETCODE.OK, "errmsg": "OK", "skus": skus})
+
+    @staticmethod
     def post(request):
         """ 保存用户浏览记录 """
         json_dict = json.loads(request.body.decode())

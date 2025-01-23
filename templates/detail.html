@@ -137,9 +137,9 @@
                 <div class="type_select">
                     <label>{{ spec.name }}</label>
                     {% for option in spec.spec_options %}
-                        {% if option.sku_id ==sku.id %}
+                        {% if option.sku_id == sku.id %}
                             <a href="javascript:;"
-                               class="select">{{ option.value }}-{{ sku.id }}</a>
+                               class="select">{{ option.value }}</a>
                         {% elif option.sku_id %}
                             <a href="{{ url('goods:detail', args=(option.sku_id, )) }}">{{ option.value }}</a>
                         {% else %}
