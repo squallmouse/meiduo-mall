@@ -13,6 +13,7 @@ from django.urls import reverse
 from django.views import View
 from django_redis import get_redis_connection
 
+from apps.goods.models import SKU
 from apps.users.contants import generate_verify_email_url
 from apps.users.models import User, Address
 from celery_tasks.email.tasks import celery_send_verify_email
@@ -241,7 +242,7 @@ class AddressView(View):
         """提供地址界面"""
         user = request.user
         address_list = []
-        temp = Address.objects.filter(user = user,is_delete = False)
+        temp = Address.objects.filter(user=user, is_delete=False)
         for address in temp:
             item = {
                 "id"      : address.id,
@@ -276,7 +277,7 @@ class CreateAddressView(LoginRequiredJSONMixin, View):
         # 判断地址是否超过上限
         count = Address.objects.filter(user=request.user, is_delete=False).count()
         if count > 20:
-            return JsonResponse({"code": RETCODE.THROTTLINGERR,"errmsg": "超过地址数量上限"})
+            return JsonResponse({"code": RETCODE.THROTTLINGERR, "errmsg": "超过地址数量上限"})
         # 接收参数
         body_para = json.loads(request.body.decode())
         receiver = body_para.get("receiver")
@@ -340,7 +341,8 @@ class CreateAddressView(LoginRequiredJSONMixin, View):
             "email"   : address.email,
         }
         # 返回响应结果
-        return http.JsonResponse({"code": RETCODE.OK, "errmsg": "新增地址成功", "address": address_dict})
+        return http.JsonResponse(
+            {"code": RETCODE.OK, "errmsg": "新增地址成功", "address": address_dict})
 
 
 class UpdateDestroyAddressView(LoginRequiredJSONMixin, View):
@@ -417,7 +419,8 @@ class UpdateDestroyAddressView(LoginRequiredJSONMixin, View):
                 "email"   : address.email,
             }
             # 返回响应结果
-            return http.JsonResponse({"code": RETCODE.OK, "errmsg": "新增地址成功", "address": address_dict})
+            return http.JsonResponse(
+                {"code": RETCODE.OK, "errmsg": "新增地址成功", "address": address_dict})
 
     @staticmethod
     def delete(request, address_id):
@@ -430,7 +433,8 @@ class UpdateDestroyAddressView(LoginRequiredJSONMixin, View):
             logging.getLogger('django').error(f"删除地址失败 => {e}")
             return http.JsonResponse({"code": RETCODE.DBERR, "errmsg": "删除地址失败"})
         else:
-            return http.JsonResponse({"code":RETCODE.OK,"errmsg":"删除地址成功"})
+            return http.JsonResponse({"code": RETCODE.OK, "errmsg": "删除地址成功"})
+
 
 class DefaultAddressView(LoginRequiredJSONMixin, View):
     """设置默认地址"""
@@ -447,3 +451,37 @@ class DefaultAddressView(LoginRequiredJSONMixin, View):
             return http.JsonResponse({"code": RETCODE.NODATAERR, "errmsg": "设置默认地址失败"})
         else:
             return http.JsonResponse({"code": RETCODE.OK, "errmsg": "设置默认地址成功"})
+
+
+class UserBrowseHistory(LoginRequiredJSONMixin, View):
+    """ 用户浏览器 """
+
+    @staticmethod
+    def post(request):
+        """ 保存用户浏览记录 """
+        json_dict = json.loads(request.body.decode())
+        sku_id = json_dict.get("sku_id")
+        print(sku_id)
+        print(sku_id)
+        print(sku_id)
+        if not sku_id:
+            return http.HttpResponseForbidden("缺少必传参数")
+
+        try:
+            SKU.objects.get(id=sku_id)
+        except SKU.DoesNotExist:
+            return http.HttpResponseForbidden("商品不存在")
+
+        redis_conn = get_redis_connection("history")
+        pl = redis_conn.pipeline()
+        user_id = request.user.id
+        redis_key = "history_%s" % user_id
+        #         先去重
+        pl.lrem(redis_key, 0, sku_id)
+        #         再加入
+        pl.lpush(redis_key, sku_id)
+        #         再截取
+        pl.ltrim(redis_key, 0, 4)
+        pl.execute()
+
+        return http.JsonResponse({"code": RETCODE.OK, "errmsg": "OK"})

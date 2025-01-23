@@ -131,6 +131,13 @@ CACHES = {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
     },
+    "history": {  # verify_code 缓存后端- 验证码相关
+        "BACKEND" : "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/3",
+        "OPTIONS" : {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    },
 }
 # 表示会话数据将存储在缓存中
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"

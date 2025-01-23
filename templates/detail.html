@@ -141,9 +141,9 @@
                             <a href="javascript:;"
                                class="select">{{ option.value }}-{{ sku.id }}</a>
                         {% elif option.sku_id %}
-                            <a href="{{ url('goods:detail', args=(option.sku_id, )) }}">{{ option.value }}-{{ sku.id }}</a>
+                            <a href="{{ url('goods:detail', args=(option.sku_id, )) }}">{{ option.value }}</a>
                         {% else %}
-                            <a href="javascript:;">{{ option.value }}-{{ sku.id }}-{{ option.sku_id }}</a>
+                            <a href="javascript:;">{{ option.value }}</a>
                         {% endif %}
                     {% endfor %}
                 </div>
