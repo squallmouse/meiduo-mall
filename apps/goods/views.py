@@ -1,4 +1,6 @@
+import datetime
 import logging
+import datetime
 
 from django import http
 from django.core.paginator import Paginator, EmptyPage
@@ -7,7 +9,7 @@ from django.views import View
 from redis import DataError
 
 from apps.content.utils import get_categories
-from apps.goods.models import GoodsCategory, SKU, SPUSpecification
+from apps.goods.models import GoodsCategory, SKU, SPUSpecification, GoodsVisitCount
 from apps.goods.utils import get_breadcrumb
 from meiduo.utils.response_code import RETCODE
 
@@ -35,7 +37,8 @@ class DetailView(View):
         # 当前sku商品的规格 比如: 颜色; 内存
         sku_key = []
         for spec in sku_specs:
-            sku_key.append(spec.option.id)  # option中存放的是每个sku规格具体的名称(spec_option)的id , 可通过id查找option的名称
+            sku_key.append(
+                spec.option.id)  # option中存放的是每个sku规格具体的名称(spec_option)的id , 可通过id查找option的名称
         # 获取当前商品的所有SKU
         skus = sku.spu.sku_set.all()  # sku 所属的全部spu里找到所有的sku(各种不同种类的商品) 比如苹果手机(SPU),土豪金,深空灰,银色(3种) * 64G 256G(2种) = 6种SKU ,
         # 构建不同规格参数（选项）的sku字典
@@ -57,13 +60,13 @@ class DetailView(View):
             return
         for index, spu_spec in enumerate(goods_specs):
             # 复制当前sku的规格键
-            key = sku_key[:] # option 的 id
+            key = sku_key[:]  # option 的 id
             # 该规格的选项
             spec_options = spu_spec.options.all()  # 从option表中找到所有的具体1.颜色(金色,深空灰,银色 ) 和 2. 第二次虚幻拿到所有的 - 内存(64,256)
             for option in spec_options:
                 # 在规格参数sku字典中查找符合当前规格的sku
                 key[index] = option.id
-                option.sku_id = spec_sku_map.get(tuple(key)) # 根据key找到sku的id
+                option.sku_id = spec_sku_map.get(tuple(key))  # 根据key找到sku的id
             spu_spec.spec_options = spec_options
 
         context = {
@@ -150,3 +153,37 @@ class ListView(View):
         }
 
         return render(request, 'list.html', context=context)
+
+
+class DetailVisitView(View):
+    """ 详情页 分类商品访问量"""
+
+    @staticmethod
+    def post(request, category_id):
+        print(category_id)
+        try:
+            category = GoodsCategory.objects.get(id=category_id)
+        except GoodsCategory.DoesNotExist:
+            return http.HttpResponseForbidden("商品类别不存在")
+
+        # 获取今天的日期
+        t = datetime.datetime.now()
+
+        today_str = "%d-%02d-%02d" % (t.year, t.month, t.day)
+        today_date = datetime.datetime.strptime(today_str, "%Y-%m-%d")
+
+        try:
+            count_visit = GoodsVisitCount.objects.get(category_id=category_id)
+        except GoodsVisitCount.DoesNotExist:
+            count_visit = GoodsVisitCount()
+
+        try:
+            count_visit.category = category
+            count_visit.date = today_date
+            count_visit.count += 1
+            count_visit.save()
+        except Exception as e:
+            logging.logger("django").error(e)
+            return http.HttpResponseForbidden("服务器异常")
+
+        return http.JsonResponse({"code": RETCODE.OK, "errmsg": "OK"})

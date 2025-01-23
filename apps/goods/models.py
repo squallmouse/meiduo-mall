@@ -8,7 +8,8 @@ from meiduo.utils.fastdfs.fdfs_storage import FastDFSStorage
 class GoodsCategory(BaseModel):
     """商品类别  类似省市区三级联动"""
     name = models.CharField(max_length=10, verbose_name='名称')
-    parent = models.ForeignKey('self', related_name='subs', null=True, blank=True, on_delete=models.CASCADE, verbose_name='父类别')
+    parent = models.ForeignKey('self', related_name='subs', null=True, blank=True,
+                               on_delete=models.CASCADE, verbose_name='父类别')
 
     class Meta:
         db_table = 'tb_goods_category'
@@ -34,8 +35,9 @@ class GoodsChannelGroup(BaseModel):
 
 class GoodsChannel(BaseModel):
     """商品频道"""
-    group = models.ForeignKey(GoodsChannelGroup,on_delete=models.CASCADE, verbose_name='频道组名')
-    category = models.ForeignKey(GoodsCategory, on_delete=models.CASCADE, verbose_name='顶级商品类别')
+    group = models.ForeignKey(GoodsChannelGroup, on_delete=models.CASCADE, verbose_name='频道组名')
+    category = models.ForeignKey(GoodsCategory, on_delete=models.CASCADE,
+                                 verbose_name='顶级商品类别')
     url = models.CharField(max_length=50, verbose_name='频道页面链接')
     sequence = models.IntegerField(verbose_name='组内顺序')
 
@@ -67,9 +69,12 @@ class SPU(BaseModel):
     """商品SPU"""
     name = models.CharField(max_length=50, verbose_name='名称')
     brand = models.ForeignKey(Brand, on_delete=models.PROTECT, verbose_name='品牌')
-    category1 = models.ForeignKey(GoodsCategory, on_delete=models.PROTECT, related_name='cat1_spu', verbose_name='一级类别')
-    category2 = models.ForeignKey(GoodsCategory, on_delete=models.PROTECT, related_name='cat2_spu', verbose_name='二级类别')
-    category3 = models.ForeignKey(GoodsCategory, on_delete=models.PROTECT, related_name='cat3_spu', verbose_name='三级类别')
+    category1 = models.ForeignKey(GoodsCategory, on_delete=models.PROTECT, related_name='cat1_spu',
+                                  verbose_name='一级类别')
+    category2 = models.ForeignKey(GoodsCategory, on_delete=models.PROTECT, related_name='cat2_spu',
+                                  verbose_name='二级类别')
+    category3 = models.ForeignKey(GoodsCategory, on_delete=models.PROTECT, related_name='cat3_spu',
+                                  verbose_name='三级类别')
     sales = models.IntegerField(default=0, verbose_name='销量')
     comments = models.IntegerField(default=0, verbose_name='评价数')
     desc_detail = models.TextField(default='', verbose_name='详细介绍')
@@ -98,7 +103,8 @@ class SKU(BaseModel):
     sales = models.IntegerField(default=0, verbose_name='销量')
     comments = models.IntegerField(default=0, verbose_name='评价数')
     is_launched = models.BooleanField(default=True, verbose_name='是否上架销售')
-    default_image = models.ImageField(storage=FastDFSStorage(),max_length=200, default='', null=True, blank=True, verbose_name='默认图片')
+    default_image = models.ImageField(storage=FastDFSStorage(), max_length=200, default='',
+                                      null=True, blank=True, verbose_name='默认图片')
 
     class Meta:
         db_table = 'tb_sku'
@@ -125,7 +131,8 @@ class SKUImage(BaseModel):
 
 class SPUSpecification(BaseModel):
     """商品SPU规格"""
-    spu = models.ForeignKey(SPU, on_delete=models.CASCADE, related_name='specs', verbose_name='商品SPU')
+    spu = models.ForeignKey(SPU, on_delete=models.CASCADE, related_name='specs',
+                            verbose_name='商品SPU')
     name = models.CharField(max_length=20, verbose_name='规格名称')
 
     class Meta:
@@ -139,7 +146,8 @@ class SPUSpecification(BaseModel):
 
 class SpecificationOption(BaseModel):
     """规格选项"""
-    spec = models.ForeignKey(SPUSpecification, related_name='options', on_delete=models.CASCADE, verbose_name='规格')
+    spec = models.ForeignKey(SPUSpecification, related_name='options', on_delete=models.CASCADE,
+                             verbose_name='规格')
     value = models.CharField(max_length=20, verbose_name='选项值')
 
     class Meta:
@@ -164,3 +172,18 @@ class SKUSpecification(BaseModel):
 
     def __str__(self):
         return '%s: %s - %s' % (self.sku, self.spec.name, self.option.value)
+
+
+class GoodsVisitCount(BaseModel):
+    """统计分类商品访问量模型类"""
+    category = models.ForeignKey(GoodsCategory, on_delete=models.CASCADE, verbose_name='商品类别')
+    count = models.IntegerField(default=0, verbose_name='访问量')
+    date = models.DateField(auto_now_add=True, verbose_name='统计日期')
+
+    class Mate:
+        db_table = 'tb_goods_visit'
+        verbose_name = '统计分类商品访问量'
+        verbose_name_plural = verbose_name
+
+    def __str__(self):
+        return '%s : %s => %s' % (self.category, self.category.name, self.count)
