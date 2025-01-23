@@ -45,7 +45,8 @@ INSTALLED_APPS = [
     'apps.content.apps.ContentConfig',
     'apps.verifications.apps.VerificationsConfig',
     'apps.areas.apps.AreasConfig',
-    'apps.goods.apps.GoodsConfig'
+    'apps.goods.apps.GoodsConfig',
+    'apps.carts.apps.CartsConfig'
 
 ]
 
@@ -131,9 +132,16 @@ CACHES = {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
     },
-    "history": {  # verify_code 缓存后端- 验证码相关
+    "history"    : {  # history 缓存后端- 浏览商品历史
         "BACKEND" : "django_redis.cache.RedisCache",
         "LOCATION": "redis://127.0.0.1:6379/3",
+        "OPTIONS" : {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    },
+    "carts"      : {  # carts 缓存后端- 购物车相关
+        "BACKEND" : "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/4",
         "OPTIONS" : {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }

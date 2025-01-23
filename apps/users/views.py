@@ -484,9 +484,6 @@ class UserBrowseHistory(LoginRequiredJSONMixin, View):
         """ 保存用户浏览记录 """
         json_dict = json.loads(request.body.decode())
         sku_id = json_dict.get("sku_id")
-        print(sku_id)
-        print(sku_id)
-        print(sku_id)
         if not sku_id:
             return http.HttpResponseForbidden("缺少必传参数")
 
