@@ -4,11 +4,11 @@
 
 from django.urls import re_path
 
-
 from . import views
 
 app_name = "carts"
 
 urlpatterns = [
-    re_path("^carts/$", views.CartView.as_view(),name="cart"),
+    re_path("^carts/$", views.CartView.as_view(), name="cart"),
+    re_path("^carts/selection/$", views.CartsSelectAllView.as_view()),
 ]
