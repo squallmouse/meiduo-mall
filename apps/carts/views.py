@@ -14,6 +14,18 @@ from apps.goods.models import SKU
 
 class CartView(View):
     """购物车相关"""
+    """
+        {
+           "sku_id1":{
+               "count":"1",
+               "selected":"True"
+           },
+           "sku_id3":{
+               "count":"3",
+               "selected":"True"
+           },
+        }
+    """
 
     @staticmethod
     def post(request):
@@ -47,7 +59,7 @@ class CartView(View):
             pl = redis_conn.pipeline()
             pl.hincrby("carts_%s" % user.id, sku_id, count)
             #
-            if  selected :
+            if selected:
                 pl.sadd("selected_%s" % user.id, sku_id)
             pl.execute()
             return http.JsonResponse({"code": 0, "errmsg": "ok"})
@@ -66,16 +78,73 @@ class CartView(View):
                     origin_count = cart_dict[sku_id]["count"]
                     count += origin_count
                 cart_dict[sku_id] = {
-                    "count": count,
+                    "count"   : count,
                     "selected": selected
                 }
                 cookie_str = cart_py2b64str(cart_dict)
-        #         字典转base64
+                #         字典转base64
                 response = http.JsonResponse({"code": 0, "errmsg": "ok"})
-                response.set_cookie("cart",cookie_str)
+                response.set_cookie("cart", cookie_str)
                 return response
-
 
     @staticmethod
     def get(request):
-        return render(request, "cart.html")
+        user = request.user
+        if user.is_authenticated:
+            #     登录用户
+            redis_conn = get_redis_connection("carts")
+            redis_cart = redis_conn.hgetall("carts_%s" % user.id)
+            cart_selected = redis_conn.smembers("selected_%s" % user.id)
+            # 将redis中的数据构成跟cookie中的格式一样
+            cart_dict = {}
+            for sku_id, count in redis_cart.items():
+                cart_dict[int(sku_id)] = {
+                    "count"   : int(count),
+                    "selected": sku_id in cart_selected
+                }
+        else:
+            #     未登录用户
+            cookie_carts_str = request.COOKIES.get("carts")
+            """
+            {
+                "sku_id1":{
+                    "count":"1",
+                    "selected":"True"
+                },
+                "sku_id3":{
+                    "count":"3",
+                    "selected":"True"
+                },
+            }
+            """
+            if cookie_carts_str:
+                cart_dict = cart_64str2py(cookie_carts_str)
+            else:
+                cart_dict = {}
+
+        # 上面已经 获取到了cookie样式的购物车数据
+        sku_ids = cart_dict.keys()
+        skus = SKU.objects.filter(id__in=sku_ids)
+        cart_skus = []
+
+        for sku in skus:
+            cart_skus.append({
+                "id":sku.id,
+                "name":sku.name,
+                "count":cart_dict.get(sku.id).get("count"),
+                "selected":str(cart_dict.get(sku.id).get("selected")),
+                "default_image_url":sku.default_image.url,
+                "price":str(sku.price),
+                "amount":str(sku.price * cart_dict.get(sku.id).get("count"))
+            })
+
+        context = {
+            "cart_skus": cart_skus
+        }
+
+        return render(request, "cart.html", context)
+
+    @staticmethod
+    def put(request):
+        """  修改购物车 """
+        pass

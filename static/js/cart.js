@@ -28,6 +28,7 @@ let vm = new Vue({
         this.compute_total_count();
         // 计算被勾选的商品总金额和总数量
         this.compute_total_selected_amount_count();
+        console.log(this.carts);
     },
     methods: {
         // 初始化购物车数据并渲染界面
