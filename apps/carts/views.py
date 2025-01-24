@@ -234,13 +234,27 @@ class CartView(View):
             return http.HttpResponseForbidden("商品不存在")
 
         # 判断是否登录
+        response = http.JsonResponse({"code": RETCODE.OK, "errmsg": "删除购物车成功"})
         user = request.user
         if user.is_authenticated:
             # 用户登录了
             redis_conn = get_redis_connection("carts")
             pl = redis_conn.pipeline()
-            # pl.hdel
-            pass
+            pl.hdel("carts_%s" % user.id, sku_id)
+            pl.srem("selected_%s" % user.id, sku_id)
+            pl.execute()
+
         else:
-            pass
             # 用户没有登录
+            cookie_str = request.COOKIES.get("carts")
+            if cookie_str:
+                cart_dict = cart_64str2py(cookie_str)
+            else:
+                cart_dict = {}
+
+            if sku_id in cart_dict:
+                del cart_dict[sku_id]
+
+            cookie_str = cart_py2b64str(cart_dict)
+            response.set_cookie("carts", cookie_str)
+        return response
