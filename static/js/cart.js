@@ -70,7 +70,7 @@ let vm = new Vue({
         on_minus(index){
             if (this.carts[index].count > 1) {
                 let count = this.carts[index].count - 1;
-                // this.carts[index].count = count; // 本地测试
+                this.carts[index].count = count; // 本地测试
                 this.update_count(index, count); // 请求服务器
             }
         },
@@ -83,7 +83,7 @@ let vm = new Vue({
                 count = 5;
                 alert('超过商品数量上限');
             }
-            // this.carts[index].count = count; // 本地测试
+            this.carts[index].count = count; // 本地测试
             this.update_count(index, count); // 请求服务器
         },
         // 数量输入框输入操作
