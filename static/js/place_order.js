@@ -5,8 +5,8 @@ let vm = new Vue({
         username: getCookie('username'),
         order_submitting: false,
         pay_method: 2,
-        nowsite: '',
-        payment_amount: '',
+        nowsite: default_address_id,
+        payment_amount: payment_amount,
     },
     mounted(){
         // 初始化支付金额
