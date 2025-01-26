@@ -13,6 +13,7 @@ from django.urls import reverse
 from django.views import View
 from django_redis import get_redis_connection
 
+from apps.carts.utils import merge_cart_cookie_to_redis
 from apps.goods.models import SKU
 from apps.users.contants import generate_verify_email_url
 from apps.users.models import User, Address
@@ -200,6 +201,7 @@ class LoginView(View):
             response = redirect(indexHtmlPage)
 
         response.set_cookie('username', user.username, max_age=14 * 24 * 3600)
+        response =  merge_cart_cookie_to_redis(request, user,response)
         return response
 
 
