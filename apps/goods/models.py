@@ -180,7 +180,7 @@ class GoodsVisitCount(BaseModel):
     count = models.IntegerField(default=0, verbose_name='访问量')
     date = models.DateField(auto_now_add=True, verbose_name='统计日期')
 
-    class Mate:
+    class Meta:
         db_table = 'tb_goods_visit'
         verbose_name = '统计分类商品访问量'
         verbose_name_plural = verbose_name

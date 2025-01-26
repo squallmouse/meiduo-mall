@@ -6,12 +6,12 @@ create database meiduo charset=utf8;
 drop user  if exists yuanhaomeiduo;
 FLUSH PRIVILEGES;
 SELECT User, Host FROM mysql.user;
-create user yuanhao identified by 'meiduo123yuanhao';
-grant all on meiduo.* to 'yuanhao'@'%';
+create user yuanhaomeiduo identified by 'meiduo123yuanhao';
+grant all on meiduo.* to 'yuanhaomeiduo'@'%';
 flush privileges;
 show databases;
 use meiduo;
 show tables;
 
 -- 最后别忘了迁移
-SHOW  COLUMNS FROM tb_users;
+# SHOW  COLUMNS FROM tb_users;
