@@ -5,8 +5,11 @@
 	<title>美多商城-订单确认</title>
 	<link rel="stylesheet" type="text/css" href="{{ static('css/reset.css') }}">
 	<link rel="stylesheet" type="text/css" href="{{ static('css/main.css') }}">
-	<script type="text/javascript" src="{{ static('js/vue-2.5.16.js') }}"></script>
-    <script type="text/javascript" src="{{ static('js/axios-0.18.0.min.js') }}"></script>
+{#	<script type="text/javascript" src="{{ static('js/vue-2.5.16.js') }}"></script>#}
+{#    <script type="text/javascript" src="{{ static('js/axios-0.18.0.min.js') }}"></script>#}
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+
+    <script type="text/javascript" src="{{ static('js/axios-1.7.9.js') }}"></script>
 </head>
 <body>
 	<div id="app">
@@ -28,7 +31,7 @@
 					<span>|</span>
 					<a href="{{ url('users:info') }}">用户中心</a>
 					<span>|</span>
-					<a href="{{ url('carts:info') }}">我的购物车</a>
+					<a href="{{ url('carts:cart') }}">我的购物车</a>
 					<span>|</span>
 					<a href="user_center_order.html">我的订单</a>
 				</div>
