@@ -10,7 +10,6 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('goods', '0004_goodsvisitcount'),
         ('users', '0003_address_user_default_address'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
