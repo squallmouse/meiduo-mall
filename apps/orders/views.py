@@ -91,12 +91,14 @@ class OrderCommitView(LoginRequiredJSONMixin, View):
                         if origin_stock < carts[sku_id]:
                             # 回滚
                             transaction.savepoint_rollback(save_id)
-                            return http.JsonResponse({"code": RETCODE.DBERR, "errmsg": "商品库存不足"})
+                            return http.JsonResponse(
+                                {"code": RETCODE.DBERR, "errmsg": "商品库存不足"})
 
                         # 乐观锁更新库存和销量
                         new_stock = origin_stock - count
                         new_sales = origin_sales + count
-                        result = SKU.objects.filter(id=sku_id,stock=origin_stock).update(stock=new_stock,sales=new_sales)
+                        result = SKU.objects.filter(id=sku_id, stock=origin_stock).update(
+                            stock=new_stock, sales=new_sales)
                         if result == 0:
                             continue
 
@@ -114,6 +116,7 @@ class OrderCommitView(LoginRequiredJSONMixin, View):
                         #     保存商品订单中总价和总数量
                         orderInfo.total_count += count
                         orderInfo.total_amount = sku.price * count
+                        break
 
                 # 最后添加邮费和保存订单信息
                 orderInfo.total_amount += orderInfo.freight
@@ -187,3 +190,23 @@ class OrderSettlementView(LoginRequiredMixin, View):
         }
 
         return render(request, "place_order.html", context)
+
+
+class OrderSuccessView(LoginRequiredMixin, View):
+    """订单提交成功"""
+
+    @staticmethod
+    def get(request):
+        # 获取查询参数
+        dict = request.GET
+        order_id = dict.get("order_id")
+        payment_amount = dict.get("payment_amount")
+        pay_method = dict.get("pay_method")
+        # 校验参数
+        context = {
+            "order_id"      : order_id,
+            "payment_amount": payment_amount,
+            "pay_method"    : pay_method
+        }
+
+        return render(request, "order_success.html", context)
