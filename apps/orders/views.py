@@ -79,29 +79,41 @@ class OrderCommitView(LoginRequiredJSONMixin, View):
                 sku_ids = carts.keys()
                 # 2.2 遍历购物车中被勾选的商品信息
                 for sku_id in sku_ids:
-                    sku = SKU.objects.get(id=sku_id)
-                    #     判断sku的库存
-                    count = carts[sku_id]
-                    if sku.stock < carts[sku_id]:
-                        return http.JsonResponse({"code": 400, "errmsg": "商品库存不足"})
-                    #     库存减少,销量增加
-                    sku.stock -= count
-                    sku.sales += count
-                    sku.save()
-                    #     修改SPU的销量
-                    sku.spu.sales += count
-                    sku.spu.save()
+                    while True:
+                        #     查询sku信息
+                        sku = SKU.objects.get(id=sku_id)
 
-                    #     保存订单信息
-                    OrderGoods.objects.create(
-                        order=orderInfo,
-                        sku=sku,
-                        count=count,
-                        price=sku.price,
-                    )
-                    #     保存商品订单中总价和总数量
-                    orderInfo.total_count += count
-                    orderInfo.total_amount = sku.price * count
+                        # 读取原始的库存信息
+                        origin_stock = sku.stock
+                        origin_sales = sku.sales
+                        #     判断sku的库存
+                        count = carts[sku_id]
+                        if origin_stock < carts[sku_id]:
+                            # 回滚
+                            transaction.savepoint_rollback(save_id)
+                            return http.JsonResponse({"code": 400, "errmsg": "商品库存不足"})
+
+                        # 乐观锁更新库存和销量
+                        new_stock = origin_stock - count
+                        new_sales = origin_sales + count
+                        result = SKU.objects.filter(id=sku_id,stock=origin_stock).update(stock=new_stock,sales=new_sales)
+                        if result == 0:
+                            continue
+
+                        #     修改SPU的销量
+                        sku.spu.sales += count
+                        sku.spu.save()
+
+                        #     保存订单信息
+                        OrderGoods.objects.create(
+                            order=orderInfo,
+                            sku=sku,
+                            count=count,
+                            price=sku.price,
+                        )
+                        #     保存商品订单中总价和总数量
+                        orderInfo.total_count += count
+                        orderInfo.total_amount = sku.price * count
 
                 # 最后添加邮费和保存订单信息
                 orderInfo.total_amount += orderInfo.freight
