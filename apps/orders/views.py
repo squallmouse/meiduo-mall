@@ -91,7 +91,7 @@ class OrderCommitView(LoginRequiredJSONMixin, View):
                         if origin_stock < carts[sku_id]:
                             # 回滚
                             transaction.savepoint_rollback(save_id)
-                            return http.JsonResponse({"code": 400, "errmsg": "商品库存不足"})
+                            return http.JsonResponse({"code": RETCODE.DBERR, "errmsg": "商品库存不足"})
 
                         # 乐观锁更新库存和销量
                         new_stock = origin_stock - count
