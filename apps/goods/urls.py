@@ -2,6 +2,7 @@
 # @创建时间: 2025/1/15 12:17   -- yh 
 # @文件名:      urls.py
 from django.urls import re_path
+
 from . import views
 
 app_name = "goods"

@@ -14,7 +14,7 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
-
+import datetime
 from pathlib import Path
 from . import my_git_ignore
 
@@ -48,11 +48,14 @@ INSTALLED_APPS = [
     'apps.goods.apps.GoodsConfig',
     'apps.carts.apps.CartsConfig',
     'apps.orders.apps.OrdersConfig',
-    'apps.meiduo_admin.apps.MeiduoAdminConfig'
+    'apps.meiduo_admin.apps.MeiduoAdminConfig',
+    'corsheaders',
+
 
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -247,7 +250,10 @@ LOGGING = {
 # 自定义的用户模型类
 AUTH_USER_MODEL = 'users.User'
 # 指定自定义的用户认证后端
-AUTHENTICATION_BACKENDS = ['apps.users.utils.UsernameMobileAuthBackend']
+AUTHENTICATION_BACKENDS = [
+    # 'apps.users.utils.UsernameMobileAuthBackend',
+    'meiduo.utils.authenticate.MeiduoModelBackend'
+]
 
 LOGIN_URL = '/login/'
 
@@ -269,3 +275,34 @@ DEFAULT_FILE_STORAGE = 'meiduo.utils.fastdfs.fdfs_storage.FastDFSStorage'
 
 # FastDFS相关参数
 FDFS_BASE_URL = 'http://23.95.240.187:8888/'
+
+# CORS  跨域
+CORS_ORIGIN_WHITELIST = (
+    'http://127.0.0.1:8080',
+    'http://localhost:8080',
+)
+CORS_ALLOW_CREDENTIALS = True
+
+# JWT
+REST_FRAMEWORK = {
+    # 只能固定认证
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',  # 替换为新类
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ),
+
+}  # dev_settings.py 中的 SIMPLE_JWT 配置
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME'       : datetime.timedelta(days=1),
+    'AUTH_HEADER_TYPES': ('JWT', 'Bearer'),  # ✅ 允许 JWT 格式
+    'JWT_RESPONSE_PAYLOAD_HANDLER': 'apps.meiduo_admin.utils.jwt_response_payload_handler',  # 关键配置
+}
+
+# # 新增 JWT 配置（可选）
+# SIMPLE_JWT = {
+#     'ACCESS_TOKEN_LIFETIME'       : datetime.timedelta(days=1),
+#     # 'ROTATE_REFRESH_TOKENS'       : True,
+#     # 新增以下一行：指定自定义的payload处理函数
+#     'JWT_RESPONSE_PAYLOAD_HANDLER': 'apps.meiduo_admin.utils.jwt_response_payload_handler',
+# }
